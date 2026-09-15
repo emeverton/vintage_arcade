@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState, type KeyboardEvent } from 'react';
 
 type Mode = {
   id: string;
@@ -60,9 +60,42 @@ export default function ArcadeModeSelector() {
   const [activeId, setActiveId] = useState(modes[0].id);
   const active = modes.find((mode) => mode.id === activeId) ?? modes[0];
 
+  const selectByIndex = useCallback((index: number) => {
+    const next = modes[(index + modes.length) % modes.length];
+    setActiveId(next.id);
+  }, []);
+
+  const onKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      const current = modes.findIndex((mode) => mode.id === activeId);
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
+        event.preventDefault();
+        selectByIndex(current + 1);
+      }
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        selectByIndex(current - 1);
+      }
+      if (event.key === 'Home') {
+        event.preventDefault();
+        selectByIndex(0);
+      }
+      if (event.key === 'End') {
+        event.preventDefault();
+        selectByIndex(modes.length - 1);
+      }
+    },
+    [activeId, selectByIndex]
+  );
+
   return (
     <div className="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-stretch">
-      <div className="grid grid-cols-4 gap-3 rounded-[1.5rem] border border-white/10 bg-black/25 p-4 lg:grid-cols-2" role="tablist" aria-label="Escolha uma experiência Vintage Arcade">
+      <div
+        className="control-deck grid grid-cols-4 gap-3 rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.35))] p-4 lg:grid-cols-2"
+        role="tablist"
+        aria-label="Escolha uma experiência Vintage Arcade"
+        onKeyDown={onKeyDown}
+      >
         {modes.map((mode) => {
           const selected = active.id === mode.id;
           return (
@@ -71,24 +104,32 @@ export default function ArcadeModeSelector() {
               type="button"
               role="tab"
               aria-selected={selected}
+              aria-controls="arcade-mode-panel"
+              id={`arcade-mode-${mode.id}`}
+              tabIndex={selected ? 0 : -1}
               onClick={() => setActiveId(mode.id)}
-              className={`arcade-action arcade-action-${mode.tone} rounded-2xl border px-3 py-3 transition duration-150 ${selected ? 'border-vintageYellow/50 bg-white/10 -translate-y-1' : 'border-white/5 bg-white/[0.02] hover:border-white/15 hover:bg-white/[0.05]'}`}
+              className={`arcade-action arcade-action-${mode.tone} ${selected ? 'is-active' : ''}`}
             >
-              <span aria-hidden="true" />
+              <span className="arcade-button-cap" aria-hidden="true" />
               <small>{mode.key}</small>
-              <em className="not-italic text-[9px] font-black tracking-[0.16em] text-white/60">{mode.label}</em>
+              <em className="not-italic text-[9px] font-black tracking-[0.16em] text-white/65">{mode.label}</em>
             </button>
           );
         })}
       </div>
 
-      <div className="flex min-h-[210px] flex-col justify-between rounded-[1.5rem] border border-vintageBlue/25 bg-[radial-gradient(circle_at_top_right,rgba(30,70,200,0.20),transparent_45%),rgba(255,255,255,0.035)] p-5 md:p-6" role="tabpanel">
+      <div
+        id="arcade-mode-panel"
+        className="flex min-h-[210px] flex-col justify-between rounded-[1.5rem] border border-vintageBlue/25 bg-[radial-gradient(circle_at_top_right,rgba(30,70,200,0.20),transparent_45%),rgba(255,255,255,0.035)] p-5 md:p-6"
+        role="tabpanel"
+        aria-labelledby={`arcade-mode-${active.id}`}
+      >
         <div>
           <span className="text-[9px] font-black uppercase tracking-[0.28em] text-vintageYellow">MODE SELECTED · {active.label}</span>
           <h4 className="mt-3 max-w-xl text-2xl font-black uppercase leading-tight md:text-3xl">{active.title}</h4>
           <p className="mt-3 max-w-2xl text-sm leading-6 text-white/68">{active.text}</p>
         </div>
-        <a className="retro-btn retro-btn-primary mt-5 self-start" href={active.href} target="_blank" rel="noreferrer">
+        <a className="retro-btn retro-btn-primary mt-5 self-start focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintageYellow" href={active.href} target="_blank" rel="noreferrer">
           {active.cta}
         </a>
       </div>

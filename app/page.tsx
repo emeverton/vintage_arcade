@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import ArcadeHeroScreen from './components/ArcadeHeroScreen';
 import ArcadeModeSelector from './components/ArcadeModeSelector';
 
 const WHATSAPP = 'https://wa.me/551733402000';
@@ -76,70 +77,31 @@ export default function HomePage() {
       <section className="relative px-3 py-5 md:px-6 md:py-10 lg:px-10">
         <div className="mx-auto max-w-7xl">
           <div className="arcade-shell cabinet-depth mx-auto max-w-6xl rounded-[2.4rem] border border-white/10 bg-[linear-gradient(180deg,#171824_0%,#09090f_100%)] p-2 shadow-glow md:p-5">
-            <header className="marquee-panel relative mx-auto mb-3 max-w-5xl overflow-hidden rounded-[2rem_2rem_1rem_1rem] border border-vintageYellow/35 bg-[linear-gradient(100deg,#13278f_0%,#1E46C8_42%,#ff4fa3_100%)] bg-[length:200%_200%] px-5 py-4 shadow-neon animate-marquee md:px-8 md:py-5">
-              <div className="marquee-noise absolute inset-0 opacity-30" />
-              <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <a href="#top" className="flex items-center gap-3" aria-label="Vintage Arcade - início">
+            <header className="marquee-panel marquee-sticky relative z-30 mx-auto mb-3 max-w-5xl overflow-hidden rounded-[2rem_2rem_1rem_1rem] border border-vintageYellow/40 px-4 py-3 md:px-8 md:py-4">
+              <div className="marquee-acrylic absolute inset-0" aria-hidden="true" />
+              <div className="marquee-noise absolute inset-0 opacity-25" aria-hidden="true" />
+              <div className="marquee-shine absolute inset-0" aria-hidden="true" />
+              <div className="relative z-10 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <a href="#top" className="flex items-center gap-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintageYellow" aria-label="Vintage Arcade - início">
                   <div className="brand-chip">
-                    <Image src="/images/vintage-arcade-logo.webp" alt="Vintage Arcade" width={90} height={90} className="h-12 w-12 object-contain md:h-14 md:w-14" priority />
+                    <Image src="/images/vintage-arcade-logo.webp" alt="Vintage Arcade" width={90} height={90} className="h-11 w-11 object-contain md:h-12 md:w-12" priority />
                   </div>
                   <div>
                     <p className="text-[9px] font-black uppercase tracking-[0.42em] text-vintageYellow md:text-[10px]">Vintage Arcade • Bebedouro</p>
-                    <h1 className="mt-1 text-xl font-black uppercase tracking-[0.12em] md:text-3xl">Press Start</h1>
+                    <h1 className="mt-1 text-lg font-black uppercase tracking-[0.12em] md:text-2xl">Press Start</h1>
                   </div>
                 </a>
-                <nav className="flex flex-wrap items-center gap-2 md:justify-end">
+                <nav className="flex flex-wrap items-center gap-2 md:justify-end" aria-label="Navegação principal">
                   {navItems.map((item) => (
-                    <a key={item.label} href={item.href} className="nav-pill">{item.label}</a>
+                    <a key={item.label} href={item.href} className="nav-pill focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-vintageYellow">{item.label}</a>
                   ))}
                 </nav>
               </div>
             </header>
 
             <section id="top" className="cabinet-screen-wrap relative mx-auto max-w-5xl px-1 pb-2 md:px-7 md:pb-5">
-              <div className="screen-bezel rounded-[2.2rem_2.2rem_1rem_1rem] border border-white/10 bg-black p-3 md:p-5">
-                <div className="hero-screen relative min-h-[650px] overflow-hidden rounded-[1.6rem] border border-white/10 bg-[#060918] px-5 py-8 shadow-screen md:min-h-[700px] md:px-10 md:py-10">
-                  <div className="absolute inset-0 bg-scanlines bg-[size:100%_8px] opacity-[0.14]" />
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_25%,rgba(30,70,200,0.40),transparent_38%),linear-gradient(180deg,rgba(0,0,0,0.05),rgba(0,0,0,0.62))]" />
-                  <div className="screen-glow screen-glow-left" />
-                  <div className="screen-glow screen-glow-right" />
-
-                  <div className="relative z-10 flex min-h-[585px] flex-col items-center justify-center text-center md:min-h-[620px]">
-                    <p className="mb-4 inline-flex rounded-full border border-vintageYellow/40 bg-vintageYellow/10 px-4 py-2 text-[9px] font-black uppercase tracking-[0.34em] text-vintageYellow md:text-[10px]">
-                      Food + Games + Nostalgia
-                    </p>
-
-                    <div className="hero-logo-wrap">
-                      <Image src="/images/vintage-arcade-logo.webp" alt="Logo Vintage Arcade" width={860} height={860} className="mx-auto h-auto w-full max-w-[390px] object-contain drop-shadow-[0_24px_48px_rgba(0,0,0,0.45)] md:max-w-[470px]" priority />
-                    </div>
-
-                    <h2 className="mt-6 max-w-4xl text-4xl font-black uppercase leading-[0.9] tracking-[-0.03em] md:text-6xl lg:text-7xl">
-                      Comida. Games.<br />Nostalgia.
-                    </h2>
-                    <p className="mt-5 max-w-2xl text-sm leading-6 text-white/72 md:text-base md:leading-7">
-                      Uma experiência arcade no coração de Bebedouro, com sandubas lendários, porções, drinks e diversão para todas as idades.
-                    </p>
-
-                    <div className="mt-7 flex w-full max-w-xl flex-col gap-3 sm:flex-row sm:justify-center">
-                      <a href={`${WHATSAPP}?text=Oi%2C%20quero%20reservar%20uma%20mesa%20na%20Vintage%20Arcade.`} target="_blank" rel="noreferrer" className="retro-btn retro-btn-primary flex-1">Reservar mesa</a>
-                      <a href={`${WHATSAPP}?text=Oi%2C%20quero%20ver%20o%20card%C3%A1pio%20da%20Vintage%20Arcade.`} target="_blank" rel="noreferrer" className="retro-btn retro-btn-secondary flex-1">Ver cardápio</a>
-                    </div>
-
-                    <div className="mt-8 grid w-full max-w-3xl grid-cols-3 gap-2 md:gap-3">
-                      {[
-                        ['4,8★', 'Google'],
-                        ['540+', 'Avaliações'],
-                        ['2018', 'Desde']
-                      ].map(([value, label]) => (
-                        <div key={label} className="screen-stat"><strong>{value}</strong><span>{label}</span></div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="screen-statusbar">
-                    <span>1UP</span><span className="animate-pulseSoft">READY PLAYER?</span><span>HI-SCORE</span>
-                  </div>
-                </div>
+              <div className="screen-bezel rounded-[2.2rem_2.2rem_1rem_1rem] border border-white/10 bg-black p-2.5 md:p-5">
+                <ArcadeHeroScreen />
               </div>
             </section>
 
