@@ -1,73 +1,60 @@
 'use client';
 
 import Image from 'next/image';
-import type { CatalogItem } from '../lib/catalog';
-import { catalogHref } from '../lib/catalog';
+import type { CatalogItem, CategoryId } from '../lib/site';
+import { itemLinks } from '../lib/site';
 
 type Props = {
   item: CatalogItem;
+  category: CategoryId;
   index: number;
   total: number;
   onPrev: () => void;
   onNext: () => void;
 };
 
-export default function ProductArcadeScreen({ item, index, total, onPrev, onNext }: Props) {
-  const links = catalogHref(item);
-  const primaryCta = item.category === 'eventos' ? 'CONSULTAR' : 'PEDIR';
-  const secondaryCta = item.category === 'eventos' ? 'VER EVENTOS' : 'VER CARDÁPIO';
+export default function ProductArcadeScreen({ item, category, index, total, onPrev, onNext }: Props) {
+  const links = itemLinks(item, category);
+  const title = category === 'burgers' ? 'SELECT YOUR BURGER' : `SELECT · ${item.categoryLabel}`;
 
   return (
-    <div className="cabinet-screen" role="region" aria-label="Catálogo interativo Vintage Arcade">
-      <div className="cabinet-screen-crt" aria-hidden="true" />
-      <div className="cabinet-screen-scanlines" aria-hidden="true" />
+    <div className="va-screen" role="region" aria-label="Catálogo interativo">
+      <div className="va-screen-scan" aria-hidden="true" />
 
-      <div className="cabinet-screen-topbar">
+      <div className="va-screen-bar">
         <span>1UP</span>
-        <strong>{item.category === 'burgers' ? 'SELECT YOUR BURGER' : `SELECT · ${item.categoryLabel}`}</strong>
+        <strong>{title}</strong>
         <span>HI-SCORE</span>
       </div>
 
-      <div className="cabinet-screen-stage">
-        <div className="cabinet-product-visual" aria-hidden="true">
-          <div className="cabinet-product-glow" />
-          <Image
-            src="/images/vintage-arcade-logo.webp"
-            alt=""
-            width={220}
-            height={220}
-            className="cabinet-product-logo"
-            priority
-          />
-          <div className="cabinet-product-badge">{item.categoryLabel}</div>
+      <div className="va-screen-body">
+        <div className="va-screen-art" aria-hidden="true">
+          <Image src="/images/vintage-arcade-logo.webp" alt="" width={180} height={180} className="va-screen-logo" />
         </div>
 
-        <div className="cabinet-product-copy">
-          <p className="cabinet-product-kicker">
-            {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')} · {item.categoryLabel}
+        <div className="va-screen-copy">
+          <p className="va-screen-meta">
+            {String(index + 1).padStart(2, '0')}/{String(total).padStart(2, '0')} · {item.categoryLabel}
           </p>
-          <h2 className="cabinet-product-name">{item.name}</h2>
-          <p className="cabinet-product-desc">{item.description}</p>
-          {item.placeholder ? (
-            <p className="cabinet-product-note">Visual de marca temporário — foto do produto em breve.</p>
-          ) : null}
+          <h2>{item.name}</h2>
+          <p>{item.description}</p>
         </div>
       </div>
 
-      <div className="cabinet-screen-controls">
-        <button type="button" className="cabinet-screen-nav" onClick={onPrev} aria-label="Produto anterior">
-          PREV
+      <div className="va-screen-footer">
+        <button type="button" className="va-nav-btn" onClick={onPrev} aria-label="Anterior">
+          ◀ PREV
         </button>
-        <div className="cabinet-screen-ctas">
-          <a href={links.menu} target="_blank" rel="noreferrer" className="cabinet-chip-btn">
-            {secondaryCta}
+        <div className="va-screen-ctas">
+          <a href={links.secondary} target="_blank" rel="noreferrer" className="va-chip">
+            {links.secondaryLabel}
           </a>
-          <a href={links.order} target="_blank" rel="noreferrer" className="cabinet-chip-btn cabinet-chip-btn-primary">
-            {primaryCta}
+          <a href={links.primary} target="_blank" rel="noreferrer" className="va-chip va-chip-primary">
+            {links.primaryLabel}
           </a>
         </div>
-        <button type="button" className="cabinet-screen-nav" onClick={onNext} aria-label="Próximo produto">
-          NEXT
+        <button type="button" className="va-nav-btn" onClick={onNext} aria-label="Próximo">
+          NEXT ▶
         </button>
       </div>
     </div>
