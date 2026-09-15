@@ -89,9 +89,9 @@ export default function ArcadeModeSelector() {
   );
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[auto_1fr] lg:items-stretch">
+    <div className="grid gap-4 lg:grid-cols-[220px_1fr] lg:items-stretch">
       <div
-        className="control-deck grid grid-cols-4 gap-3 rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(0,0,0,0.35))] p-4 lg:grid-cols-2"
+        className="control-deck grid grid-cols-4 gap-2 lg:grid-cols-2"
         role="tablist"
         aria-label="Escolha uma experiência Vintage Arcade"
         onKeyDown={onKeyDown}
@@ -120,7 +120,7 @@ export default function ArcadeModeSelector() {
 
       <div
         id="arcade-mode-panel"
-        className="flex min-h-[210px] flex-col justify-between rounded-[1.5rem] border border-vintageBlue/25 bg-[radial-gradient(circle_at_top_right,rgba(30,70,200,0.20),transparent_45%),rgba(255,255,255,0.035)] p-5 md:p-6"
+        className="flex min-h-[180px] flex-col justify-between rounded-[1.25rem] border border-white/8 bg-white/[0.03] p-5 md:p-6"
         role="tabpanel"
         aria-labelledby={`arcade-mode-${active.id}`}
       >
