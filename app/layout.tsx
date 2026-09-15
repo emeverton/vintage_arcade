@@ -10,9 +10,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="pt-BR">
       <head>
-        <link rel="preload" as="image" href="/images/vintage-arcade-hero-9x16.webp" type="image/webp" media="(max-width: 767px)" />
-        <link rel="preload" as="image" href="/images/vintage-arcade-hero-4x5.webp" type="image/webp" media="(min-width: 768px) and (max-width: 1023px)" />
-        <link rel="preload" as="image" href="/images/vintage-arcade-hero-16x9.webp" type="image/webp" media="(min-width: 1024px)" />
+        <link rel="preload" as="image" href="/images/vintage-arcade-logo.webp" type="image/webp" />
       </head>
       <body>{children}</body>
     </html>
