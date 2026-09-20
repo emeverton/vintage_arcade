@@ -1,6 +1,6 @@
 # F0: Discovery and Foundation Checklist
 
-Scope note: bootstrap and synthetic backend slice are separate from commercial acceptance. See phase-1-verification.md and phase-1b-verification.md for tested SHAs, evidence and limits.
+Scope note: technical bootstrap, synthetic commerce and delivery backoffice acceptance are separate from commercial launch. See phase-1-verification.md, phase-1b-verification.md and phase-1c-verification.md for tested SHAs and evidence.
 
 ## Current operation
 - [ ] Export current menu/catalog
@@ -64,12 +64,31 @@ Scope note: bootstrap and synthetic backend slice are separate from commercial a
 - [x] System payment simulator, not an external PSP sandbox
 - [x] Native order event consumed, persisted and deduplicated
 - [x] Stale freight completion rejected in integration test
-- [x] 88 unit tests and 11 commerce smoke scenarios approved
+- [x] Historical 1B baseline: 88 unit tests and 11 commerce scenarios
 - [x] Domain data backup/restore comparison in disposable CI
-- [ ] Operator rule-publication UI, authorization and audit
-- [ ] Atomic revision publication and concurrency/crash hardening
 - [ ] Storefront integration and customer endpoint ownership controls
 - [ ] Fixed-price combo discounts and complex food modifiers
+
+## Delivery backoffice, Phase 1C
+- [x] ADR-004: canonical active policy and transactional publication
+- [x] Portuguese admin screen for existing Vintage shipping options
+- [x] Rule draft, preview, explicit publication and rollback confirmation
+- [x] Authenticated existing users and explicit module-level roles
+- [x] Deny-by-default real-user grants, synthetic CI accounts only
+- [x] Atomic active-policy/generation/audit transaction
+- [x] Concurrent publication conflict and idempotent request replay
+- [x] Audit-insert fault injection with complete publication rollback
+- [x] Database rejects destructive managed-revision and audit changes
+- [x] Native cart uses published policy without storefront deployment
+- [x] Native browser session and publisher/viewer UI flows verified
+- [x] Current suite: 127 unit tests, 11 commerce scenarios, 11 admin scenarios and 7 browser checks
+- [x] Six custom tables restored and record hashes compared in CI
+- [x] Operator guide and verification report versioned
+- [ ] Initial shipping-option provisioning UI
+- [ ] Dynamic grant management and global admin RBAC
+- [ ] Quote validity, order policy snapshot and publication/checkout race acceptance
+- [ ] All alternate shipping quotation endpoints and browser/device coverage
+- [ ] Persistent client-side recovery of pending admin actions across page reloads
 
 ## Commercial and production gates
 - [ ] Persistent staging database/runtime and production secret manager
@@ -81,4 +100,4 @@ Scope note: bootstrap and synthetic backend slice are separate from commercial a
 
 ## Gate
 
-Technical PASS does not close Discovery. Unknown commercial rules and external capabilities remain explicit and live integrations remain disabled. No storefront, complete business-slice, iFood, staging or production acceptance is implied by successful CI.
+Technical PASS does not close Discovery. Unknown commercial rules and external capabilities remain explicit and live integrations remain disabled. No storefront, complete business-slice, iFood, permanent staging or production acceptance is implied by successful CI.
