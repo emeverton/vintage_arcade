@@ -35,7 +35,7 @@ export async function previewCatalog(container: MedusaContainer) {
   const spec = parseComboSpec(combo.definition)
   if (spec.sales_channel_id !== f.channel_id) throw new Error("Preview combo is outside configured channel")
   const ids = [...new Set([...spec.slots.flatMap((s) => s.options.map((o) => o.variant_id)), f.extra_variant_id])]
-  const { data } = await container.resolve("query").graph({ entity: "product_variant", fields: ["id", "title", "product.title", "product.status", "product.sales_channels.id", "calculated_price.*"], filters: { id: ids }, context: { calculated_price: QueryContext({ currency_code: "brl", region_id: f.region_id }) } })
+  const { data } = await container.resolve("query").graph({ entity: "variant", fields: ["id", "title", "product.title", "product.status", "product.sales_channels.id", "calculated_price.*"], filters: { id: ids }, context: { calculated_price: QueryContext({ currency_code: "brl", region_id: f.region_id }) } })
   const variants = data as unknown as Variant[]
   const option = (id: string) => {
     const variant = variants.find((v) => v.id === id)
