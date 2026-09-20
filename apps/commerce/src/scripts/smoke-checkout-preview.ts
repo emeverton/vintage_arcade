@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { randomBytes, createHash } from "node:crypto"
+import { randomBytes, createHash, randomUUID } from "node:crypto"
 import { writeFileSync } from "node:fs"
 import Redis from "ioredis"
 import type { ExecArgs, IFulfillmentModuleService } from "@medusajs/framework/types"
@@ -77,10 +77,10 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   const before = await delivery.publicationState(f.shipping_option_id)
   const policy = await delivery.resolvePublishedPolicy(option.data?.vintage_policy)
   const publisher = process.env.VINTAGE_DELIVERY_PUBLISHER_IDS!
-  const draft = await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"draft",{request_id:"preview_policy_draft",expected_generation:before.control?.generation || 0,reason:"QA quote invalidation test",changes:{base_fee_minor:policy.base_fee_minor+100}})
-  const published = await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"publish",{request_id:"preview_policy_publish",expected_generation:draft.generation,reason:"QA quote invalidation test",rule_id:draft.rule_id})
+  const draft = await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"draft",{request_id:randomUUID(),expected_generation:before.control?.generation || 0,reason:"QA quote invalidation test",changes:{base_fee_minor:policy.base_fee_minor+100}})
+  const published = await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"publish",{request_id:randomUUID(),expected_generation:draft.generation,reason:"QA quote invalidation test",rule_id:draft.rule_id})
   try { assert.equal((await api("complete",tokenA,{quote_id:a.body.quote.id,acknowledge_simulation:true})).status,409) } finally {
-    await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"rollback",{request_id:"preview_policy_restore",expected_generation:published.generation,reason:"Restore synthetic baseline after QA",rule_id:before.control?.active_rule_id || null})
+    await delivery.changePublication(publisher,f.shipping_option_id,option.data?.vintage_policy,"rollback",{request_id:randomUUID(),expected_generation:published.generation,reason:"Restore synthetic baseline after QA",rule_id:before.control?.active_rule_id || null})
   }
   pass("publication_after_quote_requires_explicit_requote")
   const { result:[key] } = await createApiKeysWorkflow(container).run({input:{api_keys:[{title:"QA preview bypass check",type:"publishable",created_by:""}]}})
