@@ -1,6 +1,6 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { executePreview, previewCatalog } from "../../../application/checkout-preview"
-import { limitPreviewRequests } from "../../checkout-preview-http"
+import { limitPreviewRequests } from "../../../application/checkout-preview-http"
 import { parsePreviewAction, previewBody, validSessionToken, PreviewError } from "../../../domain/checkout-preview"
 
 async function handle(req: MedusaRequest, res: MedusaResponse) {

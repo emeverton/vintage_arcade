@@ -12,7 +12,6 @@ export function privatePreviewAccess(req: MedusaRequest, res: MedusaResponse, ne
     const expected = process.env.VINTAGE_PREVIEW_SERVICE_SECRET!
     if (!validSessionToken(token) || !timingSafeEqual(Buffer.from(token), Buffer.from(expected))) { res.status(401).json({ code: "UNAUTHORIZED" }); return }
     if (req.headers.origin) { res.status(403).json({ code: "PRIVATE_ENDPOINT" }); return }
-    // Reject query strings before framework query normalization can reinterpret input.
     if (req.originalUrl.includes("?")) { res.status(400).json({ code: "UNEXPECTED_QUERY", message: "Não envie parâmetros de consulta." }); return }
   } catch { res.status(503).json({ code: "PREVIEW_CONFIGURATION" }); return }
   next()

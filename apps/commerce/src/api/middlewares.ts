@@ -1,13 +1,12 @@
 import { authenticate, defineMiddlewares, type MedusaRequest, type MedusaResponse, type MedusaNextFunction } from "@medusajs/framework/http"
 import { sliceEnabled } from "../domain/slice-guard"
 import { checkoutPreviewEnabled } from "../domain/checkout-preview"
-import { privatePreviewAccess } from "./checkout-preview-http"
+import { privatePreviewAccess } from "../application/checkout-preview-http"
 
 export default defineMiddlewares({ routes: [
   { matcher: "/admin/vintage-delivery*", middlewares: [authenticate("user", ["session", "bearer"])], bodyParser: { sizeLimit: "16kb" } },
   { matcher: "/vintage-preview*", middlewares: [privatePreviewAccess], bodyParser: { sizeLimit: "16kb" } },
   { matcher: "/store*", middlewares: [(_req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
-    // The isolated browser slice has exactly one gateway. Native Store API paths must not bypass session ownership.
     if (checkoutPreviewEnabled(process.env)) { res.status(403).json({ code: "USE_PRIVATE_PREVIEW_GATEWAY" }); return }
     next()
   }] },
