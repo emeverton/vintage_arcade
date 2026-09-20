@@ -1,6 +1,6 @@
 # F0: Discovery and Foundation Checklist
 
-Scope note: the technical bootstrap is separate from the complete business vertical slice. See phase-1-verification.md for evidence and release limits.
+Scope note: bootstrap and synthetic backend slice are separate from commercial acceptance. See phase-1-verification.md and phase-1b-verification.md for tested SHAs, evidence and limits.
 
 ## Current operation
 - [ ] Export current menu/catalog
@@ -43,15 +43,35 @@ Scope note: the technical bootstrap is separate from the complete business verti
 - [x] ADR-001 stack
 - [x] ADR-002 modular monolith/adapters
 - [x] Canonical domain draft, not final persistence schema
-- [x] Event contract draft, not live telemetry
+- [x] Event contract draft, not complete live telemetry
 - [x] Environment strategy, ADR-003
 - [x] Local/CI secrets generation and validation
 - [x] CI validation workflow, no deployment pipeline enabled
 - [x] PostgreSQL and Redis provisioning in disposable CI
-- [x] Local Compose recipe, not executed against a developer's computer
+- [x] Local Compose recipe, not executed on the operator's computer
 - [x] Medusa backend bootstrap with infrastructure providers
 - [x] Internal delivery-incentive calculation with unit tests
 - [x] Vertical-slice acceptance criteria documented
+
+## Synthetic backend slice, Phase 1B
+- [x] Clean npm ci installation with repaired and frozen lockfile
+- [x] Delivery policy revisions persisted and tested
+- [x] Scoped native calculated shipping provider
+- [x] Component-sum combo definitions persisted and validated
+- [x] Internal combo command with persisted idempotency
+- [x] BRL major/minor amount conversion tested
+- [x] Native cart, freight incentive and order workflow tested
+- [x] System payment simulator, not an external PSP sandbox
+- [x] Native order event consumed, persisted and deduplicated
+- [x] Stale freight completion rejected in integration test
+- [x] 88 unit tests and 11 commerce smoke scenarios approved
+- [x] Domain data backup/restore comparison in disposable CI
+- [ ] Operator rule-publication UI, authorization and audit
+- [ ] Atomic revision publication and concurrency/crash hardening
+- [ ] Storefront integration and customer endpoint ownership controls
+- [ ] Fixed-price combo discounts and complex food modifiers
+
+## Commercial and production gates
 - [ ] Persistent staging database/runtime and production secret manager
 - [ ] Remaining moderate dependency advisory resolved or security disposition approved
 - [ ] Complete commerce vertical slice executed with approved business inputs
@@ -61,4 +81,4 @@ Scope note: the technical bootstrap is separate from the complete business verti
 
 ## Gate
 
-The bootstrap does not close Discovery. Unknown business rules and external capabilities remain explicit and live integrations remain disabled. No complete business-slice, iFood, staging or production acceptance is implied by successful CI.
+Technical PASS does not close Discovery. Unknown commercial rules and external capabilities remain explicit and live integrations remain disabled. No storefront, complete business-slice, iFood, staging or production acceptance is implied by successful CI.
