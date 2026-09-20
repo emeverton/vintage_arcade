@@ -1,16 +1,19 @@
 import { defineConfig, loadEnv } from "@medusajs/framework/utils"
 import { readEnvironment } from "./src/config/environment"
 import { sliceEnabled } from "./src/domain/slice-guard"
+import { isolatedCiCookieOptions } from "./src/domain/ci-cookie-options"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 const env = readEnvironment(process.env)
 sliceEnabled(process.env)
+const ciCookies = isolatedCiCookieOptions(process.env)
 
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: env.databaseUrl,
     redisUrl: env.redisUrl,
     workerMode: env.workerMode,
+    ...(ciCookies ? { cookieOptions: ciCookies } : {}),
     http: {
       storeCors: env.storeCors, adminCors: env.adminCors, authCors: env.authCors,
       jwtSecret: env.jwtSecret, cookieSecret: env.cookieSecret,

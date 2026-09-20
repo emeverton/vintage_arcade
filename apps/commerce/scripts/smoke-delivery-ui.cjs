@@ -15,12 +15,18 @@ function token(actor) {
   const fixture=JSON.parse(fs.readFileSync('.cache/delivery-admin-report.json','utf8'))
   const browser=await chromium.launch({headless:true})
   const errors=[]
+  let activePage
   try {
     async function session(role) {
       const context=await browser.newContext({viewport:{width:1440,height:1100}})
+      context.setDefaultTimeout(15000)
       const response=await context.request.post(base+'/auth/session',{headers:{Authorization:'Bearer '+token(ids[role]),Origin:base}})
       assert.equal(response.status(),200,'Create native admin session')
+      const me=await context.request.get(base+'/admin/users/me')
+      assert.equal(me.status(),200,'Native cookie must authenticate a real seeded CI user')
+      assert.equal((await me.json()).user.id,ids[role])
       const page=await context.newPage()
+      activePage=page
       page.on('pageerror',e=>errors.push(e.message))
       await page.goto(base+'/app/vintage-delivery')
       await page.getByRole('heading',{name:'Regras de entrega',exact:true}).waitFor()
@@ -55,7 +61,11 @@ function token(actor) {
     assert.equal(await viewer.page.getByRole('button',{name:'Publicar revisão',exact:true}).count(),0)
     await viewer.context.close()
     assert.deepEqual(errors,[])
-    fs.writeFileSync('.cache/delivery-ui-report.json',JSON.stringify({status:'PASS',browser:'Chromium',checks:['native_session','form_preview','save_draft','confirm_publish','readback_active_policy','rollback','viewer_controls'],page_errors:errors,synthetic_only:true},null,2)+'\n')
+    fs.writeFileSync('.cache/delivery-ui-report.json',JSON.stringify({status:'PASS',browser:'Chromium',checks:['native_session_and_user_identity','form_preview','save_draft','confirm_publish','readback_active_policy','rollback','viewer_controls'],page_errors:errors,synthetic_only:true},null,2)+'\n')
     console.log('DELIVERY_UI_PASS: native admin session, preview, draft, publish, rollback and viewer permissions')
+  } catch(error) {
+    if(activePage && !activePage.isClosed()) await activePage.screenshot({path:'.cache/vintage-delivery-admin.png',fullPage:true}).catch(()=>{})
+    console.log('DELIVERY_UI_FAILURE',error instanceof Error ? error.message : String(error),JSON.stringify(errors))
+    throw error
   } finally {await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1})
