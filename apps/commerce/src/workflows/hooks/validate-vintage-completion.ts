@@ -5,21 +5,22 @@ import { evaluateDeliveryPolicy, type PricingCart } from "../../domain/delivery-
 import { medusaToMinor } from "../../domain/money"
 import { sliceEnabled } from "../../domain/slice-guard"
 import type VintageFoodService from "../../modules/vintage-food/service"
+import type VintageDeliveryService from "../../modules/vintage-delivery/service"
 import type { ComboSelection } from "../../domain/combo"
 import type { CartItemSnapshot } from "../../application/cart"
 
-/** Validation only. Never mutate the cart inside completeCartWorkflow hooks. */
 completeCartWorkflow.hooks.validate(async ({ cart }, { container }) => {
   if (!sliceEnabled(process.env)) return
   const fulfillment = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
-  // Native completion selects region.*, whereas pricing selects region_id explicitly.
+  const delivery = container.resolve<VintageDeliveryService>("vintageDelivery")
   const snapshot = cart as unknown as PricingCart & { region?: { id?: string } }
   const pricingCart: PricingCart = { ...snapshot, region_id: snapshot.region_id ?? snapshot.region?.id }
   for (const method of cart.shipping_methods || []) {
     if (!method.shipping_option_id) continue
     const option = await fulfillment.retrieveShippingOption(method.shipping_option_id)
     if (option.provider_id !== "vintage_vintage") continue
-    const quote = evaluateDeliveryPolicy(option.data?.vintage_policy, pricingCart)
+    const policy = await delivery.resolvePublishedPolicy(option.data?.vintage_policy)
+    const quote = evaluateDeliveryPolicy(policy, pricingCart)
     if (medusaToMinor(method.amount) !== quote.finalFeeMinor) throw new Error("Stale delivery quote; recalculate before payment")
   }
   const food = container.resolve<VintageFoodService>("vintageFood")
