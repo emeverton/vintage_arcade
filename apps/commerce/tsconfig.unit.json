@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "CommonJS", "moduleResolution": "Node",
+    "strict": true, "outDir": ".test-build", "rootDir": "src", "types": [],
+    "lib": ["ES2022", "DOM"], "skipLibCheck": true
+  },
+  "include": ["src/domain/delivery-incentive.ts", "src/config/environment.ts"]
+}

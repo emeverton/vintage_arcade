@@ -1,0 +1,36 @@
+{
+  "name": "vintage-commerce",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=22.16.0 <23" },
+  "scripts": {
+    "dev": "medusa develop",
+    "build": "medusa build",
+    "start": "medusa start",
+    "db:migrate": "medusa db:migrate",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "tsc -p tsconfig.unit.json && node --test tests/*.test.cjs",
+    "smoke:modules": "medusa exec ./src/scripts/smoke-modules.ts",
+    "smoke:http": "node scripts/smoke-http.mjs",
+    "env:init": "node scripts/init-local-env.mjs"
+  },
+  "dependencies": {
+    "@medusajs/admin-sdk": "2.21.0",
+    "@medusajs/cli": "2.21.0",
+    "@medusajs/framework": "2.21.0",
+    "@medusajs/medusa": "2.21.0",
+    "@medusajs/caching-redis": "2.21.0",
+    "ioredis": "^5.4.1"
+  },
+  "devDependencies": {
+    "@swc/core": "^1.7.28",
+    "@types/node": "22.15.24",
+    "@types/react": "^18.3.2",
+    "@types/react-dom": "^18.2.25",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "vite": "^5.4.14"
+  }
+}

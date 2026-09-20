@@ -1,0 +1,30 @@
+name: vintage-foundation
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: vintage
+      POSTGRES_DB: vintage_local
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run env:init first}
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["vintage_pg:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vintage -d vintage_local"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  redis:
+    image: redis:7.2-alpine
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?Run env:init first}
+    command: ["sh", "-c", "exec redis-server --appendonly yes --maxmemory-policy noeviction --requirepass \"$$REDIS_PASSWORD\""]
+    ports: ["127.0.0.1:56379:6379"]
+    volumes: ["vintage_redis:/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "REDISCLI_AUTH=$$REDIS_PASSWORD redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  vintage_pg:
+  vintage_redis:
