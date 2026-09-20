@@ -5,8 +5,8 @@ import styles from "./preview.module.css"
 type Option = { variant_id: string; name: string; amount_minor: number }
 type Catalog = { name: string; postal_code: string; slots: { id: string; min: number; max: number; options: Option[] }[]; extra: Option }
 type Quote = { id: string; expires_at: number; gap_minor: number | null; status: string; threshold_minor: number; final_fee_minor: number; full_subsidy: boolean }
-type Cart = { status: string; order_reference?: string; combo_added?: boolean; extra_enabled?: boolean; items: { name: string; quantity: number; amount_minor: number }[]; subtotal_minor?: number; shipping_minor?: number; total_minor?: number; quote?: Quote | null; needs_quote?: boolean }
-const money = (minor = 0) => (minor / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+type Cart = { status: string; postal_code?: string; order_reference?: string; combo_added?: boolean; extra_enabled?: boolean; items: { name: string; quantity: number; amount_minor: number }[]; subtotal_minor?: number; shipping_minor?: number; total_minor?: number; quote?: Quote | null; needs_quote?: boolean }
+const money = (minor = 0) => (minor / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }).replace(/\u00a0/g, " ")
 
 async function api(action: string, body?: unknown) {
   const response = await fetch(`/api/vintage-test/${action}`, { method: body === undefined ? "GET" : "POST", cache: "no-store", headers: { "Content-Type": "application/json", "x-vintage-preview": "1" }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
@@ -28,7 +28,7 @@ export default function CheckoutPreview() {
     let current = true
     Promise.all([api("catalog"), api("state")]).then(([c, state]) => {
       if (!current) return
-      setCatalog(c); setCart(state); setPostcode(c.postal_code)
+      setCatalog(c); setCart(state); setPostcode(state.postal_code || c.postal_code)
       setSelection(Object.fromEntries((c as Catalog).slots.map((s) => [s.id, s.min > 0 ? s.options[0]?.variant_id || "" : ""])))
     }).catch((e) => { if (current) setMessage(e.message) })
     const timer = setInterval(() => setNow(Date.now()), 1000)
@@ -42,11 +42,12 @@ export default function CheckoutPreview() {
       setCart(await api(action, body))
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Não foi possível continuar.")
-      try { setCart(await api("state")) } catch { /* Keep the last visible snapshot; confirmation remains disabled. */ }
+      try { setCart(await api("state")) } catch { /* Retain the last snapshot; explicit confirmation remains cleared. */ }
     } finally { setBusy(false) }
   }
   const quote = cart.quote
-  const valid = !!quote && quote.expires_at > now && !cart.needs_quote
+  const addressMatches = postcode.replace(/-/g, "") === cart.postal_code?.replace(/-/g, "")
+  const valid = !!quote && quote.expires_at > now && !cart.needs_quote && addressMatches
   const completed = cart.status === "completed"
   const gap = valid ? quote.gap_minor : null
   return <main className={styles.screen}>
@@ -61,7 +62,7 @@ export default function CheckoutPreview() {
         <section className={styles.panel} aria-labelledby="combo-title">
           <span className={styles.eyebrow}>01 / ESCOLHA OS COMPONENTES</span><h2 id="combo-title">Combo de demonstração</h2>
           <p className={styles.muted}>O preço deste protótipo é a soma dos componentes. Todas as quantias são consultadas no servidor.</p>
-          {catalog.slots.map((slot, index) => <div className={styles.field} key={slot.id}>
+          {catalog.slots.map((slot) => <div className={styles.field} key={slot.id}>
             <label htmlFor={`slot-${slot.id}`}>{slot.id === "main" ? "Lanche" : slot.id === "drink" ? "Bebida" : "Complemento opcional"} <small>{slot.min ? "Obrigatório" : "Opcional"}</small></label>
             <select id={`slot-${slot.id}`} value={selection[slot.id] || ""} disabled={busy || !!cart.combo_added || completed} onChange={(e) => setSelection({ ...selection, [slot.id]: e.target.value })}>
               {!slot.min && <option value="">Sem complemento</option>}
@@ -81,7 +82,7 @@ export default function CheckoutPreview() {
           {cart.items.length > 0 && <>
             <div className={styles.totals}><div><span>Produtos</span><strong data-testid="subtotal">{money(cart.subtotal_minor)}</strong></div><div><span>{valid || completed ? "Frete" : "Última cotação de frete"}</span><strong data-testid="shipping">{money(cart.shipping_minor)}</strong></div><div className={styles.total}><span>Total {completed ? "simulado" : "do teste"}</span><strong data-testid="total">{money(cart.total_minor)}</strong></div></div>
             {!completed ? <>
-              <div className={styles.field}><label htmlFor="postal-code">CEP de teste</label><div className={styles.postal}><input id="postal-code" inputMode="numeric" autoComplete="off" maxLength={9} value={postcode} onChange={(e) => setPostcode(e.target.value)} /><button className={styles.secondary} disabled={busy} onClick={() => run("quote", { postal_code: postcode })}>Recalcular frete</button></div></div>
+              <div className={styles.field}><label htmlFor="postal-code">CEP de teste</label><div className={styles.postal}><input id="postal-code" inputMode="numeric" autoComplete="off" maxLength={9} value={postcode} onChange={(e) => { setPostcode(e.target.value); setConfirmed(false) }} /><button className={styles.secondary} disabled={busy} onClick={() => run("quote", { postal_code: postcode })}>Recalcular frete</button></div></div>
               <p className={styles.muted}>{valid ? "Cotação válida por até cinco minutos, sujeita à revalidação da regra antes da confirmação." : "Atualize o frete para conferir os valores antes de continuar."}</p>
               <label className={styles.confirm}><input type="checkbox" checked={confirmed} disabled={busy || !valid} onChange={(e) => setConfirmed(e.target.checked)} /><span>Entendo que este pedido é apenas uma simulação e não será cobrado nem entregue.</span></label>
               <button className={styles.primary} disabled={busy || !valid || !confirmed} onClick={() => run("complete", { quote_id: quote?.id, acknowledge_simulation: true })}>{busy ? "Processando…" : "Concluir pedido simulado"}</button>

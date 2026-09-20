@@ -67,7 +67,7 @@ async function sessionView(container: MedusaContainer, session: Session, f: Prev
       quote = { id: saved.id, expires_at: saved.expires_at, gap_minor: q.gapMinor, status: q.status, final_fee_minor: q.finalFeeMinor, threshold_minor: policy.threshold_minor, full_subsidy: policy.subsidy_cap_minor >= policy.base_fee_minor }
     } catch { quote = null }
   }
-  return { synthetic: true, status: "cart", items: cart.items.map((i) => ({ name: options.find((v) => v.variant_id === i.variant_id)?.name || "Item de teste", quantity: Number(i.quantity), amount_minor: medusaToMinor(i.unit_price) })), subtotal_minor: medusaToMinor(cart.item_total), shipping_minor: medusaToMinor(cart.shipping_total), total_minor: medusaToMinor(cart.total), combo_added: cart.items.some((i) => i.metadata?.vintage_combo_id === f.combo_id), extra_enabled: cart.items.some((i) => i.metadata?.vintage_preview_extra === true), quote, needs_quote: !quote }
+  return { synthetic: true, status: "cart", postal_code: cart.shipping_address?.postal_code, items: cart.items.map((i) => ({ name: options.find((v) => v.variant_id === i.variant_id)?.name || "Item de teste", quantity: Number(i.quantity), amount_minor: medusaToMinor(i.unit_price) })), subtotal_minor: medusaToMinor(cart.item_total), shipping_minor: medusaToMinor(cart.shipping_total), total_minor: medusaToMinor(cart.total), combo_added: cart.items.some((i) => i.metadata?.vintage_combo_id === f.combo_id), extra_enabled: cart.items.some((i) => i.metadata?.vintage_preview_extra === true), quote, needs_quote: !quote }
 }
 
 async function refreshQuote(container: MedusaContainer, session: Session, f: PreviewFixture, postcode?: string) {
@@ -136,8 +136,7 @@ export async function executePreview(container: MedusaContainer, token: string, 
       requireFreshQuote(saved, body.quote_id as string, fingerprint(cart, policy))
       const carts = container.resolve<ICartModuleService>(Modules.CART)
       const current = await carts.retrieveCart(cart.id)
-      // Snapshot is carried into the native order; no live customer or charge exists in this slice.
-      await carts.updateCarts({ id: cart.id, metadata: { ...current.metadata, vintage_preview_quote: { id: saved!.id, expires_at: saved!.expires_at, policy: saved!.policy, total_minor: medusaToMinor(cart.total), simulated: true } } })
+      await carts.updateCarts([{ id: cart.id, metadata: { ...current.metadata, vintage_preview_quote: { id: saved!.id, expires_at: saved!.expires_at, policy: saved!.policy, total_minor: medusaToMinor(cart.total), simulated: true } } }])
       if (!cart.payment_collection?.id) await createPaymentCollectionForCartWorkflow(container).run({ input: { cart_id: cart.id } })
       else await refreshPaymentCollectionForCartWorkflow(container).run({ input: { cart_id: cart.id } })
       const payment = container.resolve<IPaymentModuleService>(Modules.PAYMENT)
