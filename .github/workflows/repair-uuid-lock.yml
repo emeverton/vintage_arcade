@@ -1,0 +1,61 @@
+name: Verify scoped UUID remediation
+on:
+  push:
+    branches: [foundation/vintage-commerce-v1]
+    paths: ['.github/workflows/repair-uuid-lock.yml']
+permissions:
+  contents: write
+jobs:
+  repair:
+    if: github.repository == 'emeverton/vintage_arcade' && github.ref == 'refs/heads/foundation/vintage-commerce-v1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restrict patch to UUID resolved by pinned BullMQ
+        working-directory: apps/commerce
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const p = JSON.parse(fs.readFileSync('package.json','utf8'));
+          if (p.dependencies['@medusajs/medusa'] !== '2.21.0') throw new Error('Unexpected Medusa version');
+          p.overrides['bullmq@5.13.0'] = {uuid:'11.1.1'};
+          fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\n');
+          NODE
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+          npm ci --include=dev --no-audit --no-fund
+          npm run test:unit
+          npm audit --omit=dev --json > /tmp/vintage-uuid-audit.json || true
+          node <<'NODE'
+          const assert=require('node:assert/strict'),fs=require('node:fs'),{createRequire}=require('node:module');
+          const p=require('./package.json'),lock=require('./package-lock.json');
+          for(const k of Object.keys(p.dependencies).filter(k=>k.startsWith('@medusajs/'))) assert.equal(lock.packages['node_modules/'+k].version,'2.21.0');
+          assert.equal(lock.packages['node_modules/bullmq'].version,'5.13.0');
+          const fromBull=createRequire(require.resolve('bullmq/package.json'));
+          const uuid=fromBull('uuid');
+          assert.equal(fromBull('uuid/package.json').version,'11.1.1');
+          assert.match(uuid.v4(),/^[0-9a-f-]{36}$/);
+          assert.throws(()=>uuid.v5('QA',uuid.v5.DNS,new Uint8Array(8),0),RangeError);
+          const a=JSON.parse(fs.readFileSync('/tmp/vintage-uuid-audit.json','utf8'));
+          assert.ok(a.metadata,'Audit result required');
+          assert.equal(a.metadata.vulnerabilities.total,0,'All runtime advisories must be closed before this candidate is committed');
+          console.log('UUID_REMEDIATION_CANDIDATE_PASS: CommonJS resolution, bound checking, Medusa/BullMQ pins, unit tests and runtime audit');
+          NODE
+      - name: Commit only manifest and lock on unchanged approved branch
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin foundation/vintage-commerce-v1
+          test "$(git rev-parse FETCH_HEAD)" = "$EXPECTED_SHA"
+          test "$(git diff --name-only | sort)" = "$(printf 'apps/commerce/package-lock.json\napps/commerce/package.json')"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add apps/commerce/package.json apps/commerce/package-lock.json
+          git commit -m 'fix(security): pin patched UUID within BullMQ and preserve commerce versions'
+          git push origin HEAD:refs/heads/foundation/vintage-commerce-v1
