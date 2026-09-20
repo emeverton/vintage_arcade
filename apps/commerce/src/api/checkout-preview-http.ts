@@ -11,14 +11,15 @@ export function privatePreviewAccess(req: MedusaRequest, res: MedusaResponse, ne
     const token = req.headers["x-vintage-preview-service"]
     const expected = process.env.VINTAGE_PREVIEW_SERVICE_SECRET!
     if (!validSessionToken(token) || !timingSafeEqual(Buffer.from(token), Buffer.from(expected))) { res.status(401).json({ code: "UNAUTHORIZED" }); return }
-    // Browser-origin requests never belong on this private service-to-service endpoint.
     if (req.headers.origin) { res.status(403).json({ code: "PRIVATE_ENDPOINT" }); return }
-    next()
-  } catch { res.status(503).json({ code: "PREVIEW_CONFIGURATION" }) }
+    // Reject query strings before framework query normalization can reinterpret input.
+    if (req.originalUrl.includes("?")) { res.status(400).json({ code: "UNEXPECTED_QUERY", message: "Não envie parâmetros de consulta." }); return }
+  } catch { res.status(503).json({ code: "PREVIEW_CONFIGURATION" }); return }
+  next()
 }
 
 export async function limitPreviewRequests(session: string | undefined) {
-  const redis = new Redis(process.env.REDIS_URL!, { lazyConnect: true, enableOfflineQueue: false, maxRetriesPerRequest: 1, connectTimeout: 1500, retryStrategy: () => null })
+  const redis = new Redis(process.env.REDIS_URL!, { lazyConnect: true, enableOfflineQueue: false, maxRetriesPerRequest: 1, connectTimeout: 1500, commandTimeout: 2000, retryStrategy: () => null })
   redis.on("error", () => {})
   try {
     await redis.connect()

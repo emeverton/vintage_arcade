@@ -17,11 +17,22 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   const base = "http://localhost:9000"
   const secret = process.env.VINTAGE_PREVIEW_SERVICE_SECRET!
   const tokenA = randomBytes(32).toString("hex"), tokenB = randomBytes(32).toString("hex")
+  let sequence = 0
   const api = async (action: string, token?: string, body?: unknown, extra: Record<string, string> = {}) => {
-    const response = await fetch(`${base}/vintage-preview/${action}`, { method: body === undefined ? "GET" : "POST", headers: { "Content-Type":"application/json", "x-vintage-preview-service": secret, ...(token ? { "x-vintage-preview-session":token } : {}), ...extra }, ...(body === undefined ? {} : { body:JSON.stringify(body) }) })
-    return {status:response.status, body:await response.json()}
+    const request = ++sequence, started = Date.now()
+    console.log("CHECKOUT_REQUEST_START", request, action.split("?")[0])
+    try {
+      const response = await fetch(`${base}/vintage-preview/${action}`, { signal: AbortSignal.timeout(15000), method: body === undefined ? "GET" : "POST", headers: { "Content-Type":"application/json", "x-vintage-preview-service": secret, ...(token ? { "x-vintage-preview-session":token } : {}), ...extra }, ...(body === undefined ? {} : { body:JSON.stringify(body) }) })
+      const value = await response.json()
+      console.log("CHECKOUT_REQUEST_END", request, response.status, Date.now()-started, typeof value.code === "string" ? value.code : "OK")
+      return {status:response.status, body:value}
+    } catch (error) {
+      console.error("CHECKOUT_REQUEST_FAILURE", request, action.split("?")[0], Date.now()-started, error instanceof Error ? error.name : "Unknown")
+      throw error
+    }
   }
-  assert.equal((await fetch(`${base}/vintage-preview/catalog`)).status,401)
+  const unauthorized = await fetch(`${base}/vintage-preview/catalog`, { signal: AbortSignal.timeout(15000) })
+  assert.equal(unauthorized.status,401); await unauthorized.arrayBuffer()
   assert.equal((await api("catalog",undefined,undefined,{"x-vintage-preview-service":"0".repeat(64)})).status,401)
   assert.equal((await api("catalog",undefined,undefined,{Origin:"https://example.invalid"})).status,403)
   pass("private_service_authentication_and_browser_origin_rejection")
@@ -43,7 +54,7 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   assert.equal((await api("quote",tokenA,{postal_code:f.postal_code,total:0})).status,400)
   assert.equal((await api("state?cart_id=foreign",tokenB)).status,400)
   pass("foreign_cart_ids_price_injection_and_extra_fields_rejected")
-  await Promise.all([api("combo",tokenA,{selections}),api("combo",tokenA,{selections})])
+  const replays = await Promise.all([api("combo",tokenA,{selections}),api("combo",tokenA,{selections})]); assert.ok(replays.every((r)=>r.status===200))
   a = await api("state",tokenA); assert.equal(a.body.items.length,2)
   const extras = await Promise.all([api("extra",tokenA,{enabled:true}),api("extra",tokenA,{enabled:true})]); assert.ok(extras.every((r)=>r.status===200))
   a = await api("state",tokenA); assert.equal(a.body.items.length,3); assert.equal(a.body.total_minor,3000); assert.equal(a.body.shipping_minor,0)
@@ -71,8 +82,8 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   const { result:[key] } = await createApiKeysWorkflow(container).run({input:{api_keys:[{title:"QA preview bypass check",type:"publishable",created_by:""}]}})
   await linkSalesChannelsToApiKeyWorkflow(container).run({input:{id:key.id,add:[f.channel_id]}})
   for (const path of [`/store/carts/${sa.cart_id}`,`/store/shipping-options?cart_id=${sa.cart_id}`]) {
-    const result = await fetch(base+path,{headers:{"x-publishable-api-key":key.token}})
-    assert.equal(result.status,403)
+    const result = await fetch(base+path,{signal:AbortSignal.timeout(15000),headers:{"x-publishable-api-key":key.token}})
+    assert.equal(result.status,403); await result.arrayBuffer()
   }
   pass("native_store_routes_cannot_bypass_session_gateway_even_with_valid_key")
   a = await api("extra",tokenA,{enabled:true}); assert.equal(a.status,200)
@@ -91,7 +102,7 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   await checkout.updatePreviewSessions({id:sb.id,expires_at:new Date(Date.now()-1000)})
   assert.equal((await api("state",tokenB)).status,410)
   pass("expired_session_cannot_access_its_cart")
-  const tokenC=randomBytes(32).toString("hex"), redis=new Redis(process.env.REDIS_URL!)
+  const tokenC=randomBytes(32).toString("hex"), redis=new Redis(process.env.REDIS_URL!,{commandTimeout:2000})
   try {
     await redis.set(`vintage-preview:rate:${createHash("sha256").update(tokenC).digest("hex")}`,90,"EX",60)
     assert.equal((await api("state",tokenC)).status,429)
