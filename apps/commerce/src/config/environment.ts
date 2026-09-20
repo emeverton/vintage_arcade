@@ -1,6 +1,19 @@
 export type RuntimeEnvironment = Record<string, string | undefined>
 
-export function readEnvironment(env: RuntimeEnvironment) {
+export interface ValidatedEnvironment {
+  appEnv: string
+  databaseUrl: string
+  redisUrl: string
+  storeCors: string
+  adminCors: string
+  authCors: string
+  jwtSecret: string
+  cookieSecret: string
+  workerMode: "shared" | "server" | "worker"
+  adminDisabled: boolean
+}
+
+export function readEnvironment(env: RuntimeEnvironment): ValidatedEnvironment {
   const appEnv = env.APP_ENV || "local"
   if (!["local", "test", "staging", "production"].includes(appEnv)) throw new Error("Invalid APP_ENV")
   const remote = appEnv === "staging" || appEnv === "production"

@@ -12,6 +12,9 @@ permissions:
 concurrency:
   group: vintage-foundation-${{ github.ref }}
   cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
 jobs:
   foundation:
     runs-on: ubuntu-latest
@@ -52,12 +55,21 @@ jobs:
         with:
           node-version: '22'
       - name: Generate ephemeral test secrets
-        run: node -e 'const fs=require("fs"),c=require("crypto");fs.appendFileSync(process.env.GITHUB_ENV,["JWT_SECRET="+c.randomBytes(32).toString("hex"),"COOKIE_SECRET="+c.randomBytes(32).toString("hex")].join("\n")+"\n")'
+        run: |
+          node <<'NODE'
+          const fs = require("fs"), crypto = require("crypto");
+          for (const name of ["JWT_SECRET", "COOKIE_SECRET"]) {
+            const value = crypto.randomBytes(32).toString("hex");
+            console.log("::add-mask::" + value);
+            fs.appendFileSync(process.env.GITHUB_ENV, name + "=" + value + "\n");
+          }
+          NODE
       - name: Install backend dependencies
         working-directory: apps/commerce
         run: |
           if test -f package-lock.json; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
           npm audit --omit=dev --json > runtime-audit.json || true
+          node -e 'const a=require("./runtime-audit.json");console.log("DEPENDENCY_AUDIT_REPORT",JSON.stringify(a.metadata?.vulnerabilities || a.error || {status:"unknown"}))'
       - name: Unit tests and TypeScript
         working-directory: apps/commerce
         run: |
