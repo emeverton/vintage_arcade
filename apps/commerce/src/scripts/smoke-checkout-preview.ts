@@ -9,6 +9,10 @@ import type VintageCheckoutService from "../modules/vintage-checkout/service"
 import type VintageDeliveryService from "../modules/vintage-delivery/service"
 import { readPreviewFixture } from "../application/checkout-preview-fixture"
 
+function assertRecord(value: unknown, label: string): asserts value is Record<string, unknown> {
+  assert.ok(value !== null && typeof value === "object" && !Array.isArray(value), `${label} must be a JSON object`)
+}
+
 export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   const db = new URL(process.env.DATABASE_URL || "invalid:")
   if (process.env.APP_ENV !== "test" || db.pathname !== "/vintage_ci" || !["localhost", "127.0.0.1", "postgres"].includes(db.hostname)) throw new Error("Preview smoke requires disposable CI")
@@ -93,9 +97,14 @@ export default async function smokeCheckoutPreview({ container }: ExecArgs) {
   assert.equal(results[0].body.order_reference,results[1].body.order_reference)
   assert.equal(results[0].body.total_minor,3000)
   const {data:[order]} = await container.resolve("query").graph({entity:"order",fields:["id","metadata","total"],filters:{id:results[0].body.order_reference}})
-  assert.equal(order.metadata.vintage_preview_quote.simulated,true)
-  assert.equal(order.metadata.vintage_preview_quote.total_minor,3000)
-  assert.equal(order.metadata.vintage_preview_quote.policy.rule_id,policy.rule_id)
+  assert.ok(order, "Completed preview order must exist")
+  const snapshot = order.metadata?.vintage_preview_quote
+  assertRecord(snapshot, "Persisted preview quote")
+  const snapshotPolicy = snapshot.policy
+  assertRecord(snapshotPolicy, "Persisted preview policy")
+  assert.equal(snapshot.simulated,true)
+  assert.equal(snapshot.total_minor,3000)
+  assert.equal(snapshotPolicy.rule_id,policy.rule_id)
   assert.equal((await api("state",tokenB)).body.items.length,0)
   assert.equal((await api("extra",tokenA,{enabled:false})).status,409)
   pass("simulated_order_is_idempotent_owned_and_carries_quote_policy_snapshot")
