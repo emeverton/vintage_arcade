@@ -1,8 +1,10 @@
 import { defineConfig, loadEnv } from "@medusajs/framework/utils"
 import { readEnvironment } from "./src/config/environment"
+import { sliceEnabled } from "./src/domain/slice-guard"
 
 loadEnv(process.env.NODE_ENV || "development", process.cwd())
 const env = readEnvironment(process.env)
+sliceEnabled(process.env)
 
 module.exports = defineConfig({
   projectConfig: {
@@ -23,6 +25,12 @@ module.exports = defineConfig({
     { resolve: "@medusajs/medusa/workflow-engine-redis", options: { redis: { redisUrl: env.redisUrl } } },
     { resolve: "@medusajs/medusa/locking", options: { providers: [{ resolve: "@medusajs/medusa/locking-redis", id: "locking-redis", is_default: true, options: { redisUrl: env.redisUrl } }] } },
     { resolve: "@medusajs/medusa/caching", options: { providers: [{ resolve: "@medusajs/caching-redis", id: "caching-redis", is_default: true, options: { redisUrl: env.redisUrl } }] } },
+    { resolve: "@medusajs/medusa/fulfillment", options: { providers: [
+      { resolve: "@medusajs/medusa/fulfillment-manual", id: "manual" },
+      { resolve: "./src/modules/vintage-fulfillment", id: "vintage" },
+    ] } },
     { resolve: "./src/modules/vintage-delivery" },
+    { resolve: "./src/modules/vintage-food" },
+    { resolve: "./src/modules/vintage-telemetry" },
   ],
 })

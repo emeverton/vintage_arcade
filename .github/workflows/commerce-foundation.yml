@@ -47,6 +47,7 @@ jobs:
       IFOOD_ENABLED: 'false'
       PAYMENTS_LIVE_ENABLED: 'false'
       ADS_EXPORT_ENABLED: 'false'
+      VINTAGE_SLICE_ENABLED: 'true'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,6 +55,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/commerce/package-lock.json
       - name: Generate ephemeral test secrets
         run: |
           node <<'NODE'
@@ -67,9 +72,9 @@ jobs:
       - name: Install backend dependencies
         working-directory: apps/commerce
         run: |
-          if test -f package-lock.json; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+          npm ci --include=dev --no-audit --no-fund
           npm audit --omit=dev --json > runtime-audit.json || true
-          node -e 'const a=require("./runtime-audit.json");console.log("DEPENDENCY_AUDIT_REPORT",JSON.stringify(a.metadata?.vulnerabilities || a.error || {status:"unknown"}))'
+          node -e 'const a=require("./runtime-audit.json");console.log("DEPENDENCY_AUDIT_REPORT",JSON.stringify(a.metadata?.vulnerabilities || a.error || {status:"unknown"}));if(!a.metadata || a.metadata.vulnerabilities.high || a.metadata.vulnerabilities.critical)process.exit(1)'
       - name: Unit tests and TypeScript
         working-directory: apps/commerce
         run: |
@@ -92,22 +97,29 @@ jobs:
           NODE_ENV=production npm --prefix .medusa/server run start > server.log 2>&1 &
           echo $! > /tmp/vintage-commerce.pid
           npm run smoke:http
-      - name: Verify Redis failure is reflected in readiness
+      - name: Product combo cart freight and simulated order
+        working-directory: apps/commerce
+        run: |
+          npx --no-install medusa exec ./src/scripts/smoke-commerce.ts | tee commerce-slice-results.txt
+      - name: Verify Redis failure and recovery in readiness
         working-directory: apps/commerce
         run: |
           docker stop "${{ job.services.redis.id }}"
           npm run smoke:http -- unready
           docker start "${{ job.services.redis.id }}"
-      - name: Restore isolated PostgreSQL backup
+          npm run smoke:http
+      - name: Restore isolated PostgreSQL backup and compare domain records
         run: |
           docker exec "${{ job.services.postgres.id }}" pg_dump -U vintage -Fc vintage_ci > /tmp/vintage-ci.dump
           docker exec "${{ job.services.postgres.id }}" createdb -U vintage vintage_restore
           docker exec -i "${{ job.services.postgres.id }}" pg_restore --exit-on-error -U vintage -d vintage_restore < /tmp/vintage-ci.dump
-          source_count=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_ci -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
-          restored_count=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_restore -Atc "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'")
-          test "$source_count" -gt 0
-          test "$source_count" = "$restored_count"
-          echo "ISOLATED_RESTORE_PASS: $source_count public tables"
+          for table in vintage_delivery_rule vintage_combo_definition vintage_combo_command vintage_commerce_event; do
+            query="SELECT md5(COALESCE(string_agg(row_to_json(t)::text, '|' ORDER BY id),'')) FROM $table t"
+            source_hash=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_ci -Atc "$query")
+            restored_hash=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_restore -Atc "$query")
+            test "$source_hash" = "$restored_hash"
+            echo "ISOLATED_DOMAIN_RESTORE_PASS: $table"
+          done
       - name: Preserve existing landing page build
         env:
           NODE_ENV: production
@@ -124,36 +136,11 @@ jobs:
             apps/commerce/unit-test-results.txt
             apps/commerce/runtime-audit.json
             apps/commerce/server.log
+            apps/commerce/commerce-slice-results.txt
+            apps/commerce/.cache/commerce-slice-report.json
+          include-hidden-files: true
           retention-days: 7
       - name: Stop isolated processes
         if: always()
         run: |
           test ! -f /tmp/vintage-commerce.pid || kill "$(cat /tmp/vintage-commerce.pid)" || true
-  freeze-initial-lockfile:
-    needs: foundation
-    if: github.event_name == 'push' && github.ref == 'refs/heads/foundation/vintage-commerce-v1'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: foundation/vintage-commerce-v1
-      - uses: actions/download-artifact@v4
-        with:
-          name: foundation-evidence
-          path: /tmp/foundation-evidence
-      - name: Freeze only the tested initial dependency graph
-        env:
-          EXPECTED_SHA: ${{ github.sha }}
-        run: |
-          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA" || { echo 'Branch advanced; refusing concurrent write'; exit 1; }
-          if test -f apps/commerce/package-lock.json; then echo 'Lockfile already tracked'; exit 0; fi
-          cp /tmp/foundation-evidence/package-lock.json apps/commerce/package-lock.json
-          node -e 'const p=require("./apps/commerce/package.json"),l=require("./apps/commerce/package-lock.json");if(l.name!==p.name||l.lockfileVersion!==3)process.exit(1);for(const [k,v] of Object.entries(p.dependencies))if(l.packages[""].dependencies[k]!==v)process.exit(1)'
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add apps/commerce/package-lock.json
-          git commit -m 'chore(commerce): freeze dependency graph validated by foundation CI'
-          git push origin HEAD:refs/heads/foundation/vintage-commerce-v1
