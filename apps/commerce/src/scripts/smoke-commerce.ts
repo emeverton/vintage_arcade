@@ -15,6 +15,16 @@ import { addComboToCart } from "../application/add-combo-to-cart"
 import { readCart, type CartItemSnapshot } from "../application/cart"
 import { recordOrderCreated } from "../application/order-created"
 
+// Medusa may serialize workflow errors as plain objects rather than Error instances.
+function workflowErrorText(error: unknown, depth = 0): string {
+  if (depth > 8) return ""
+  if (typeof error === "string") return error
+  if (Array.isArray(error)) return error.map((e) => workflowErrorText(e, depth + 1)).join(" ")
+  if (!error || typeof error !== "object") return ""
+  const value = error as Record<string, unknown>
+  return ["message", "error", "errors", "cause"].map((key) => workflowErrorText(value[key], depth + 1)).join(" ")
+}
+
 /** Synthetic QA fixtures only. Not real menu prices, addresses or commercial rules. */
 export default async function smokeCommerce({ container }: ExecArgs) {
   const db = new URL(process.env.DATABASE_URL || "invalid:")
@@ -113,7 +123,10 @@ export default async function smokeCommerce({ container }: ExecArgs) {
   await carts.updateShippingMethods([{ id: staleCart.shipping_methods[0].id, amount: 0 }])
   const { result: staleCollection } = await createPaymentCollectionForCartWorkflow(container).run({ input: { cart_id: staleCartId } })
   await payment.createPaymentSession(staleCollection.id, { provider_id: "pp_system_default", currency_code: "brl", amount: staleCollection.amount, data: { synthetic: true } })
-  await assert.rejects(() => completeCartWorkflow(container).run({ input: { id: staleCartId } }), /Stale delivery quote/)
+  await assert.rejects(() => completeCartWorkflow(container).run({ input: { id: staleCartId } }), (error: unknown) => {
+    assert.match(workflowErrorText(error), /Stale delivery quote/)
+    return true
+  })
   assert.equal((await readCart(container, staleCartId)).completed_at, null)
   pass("completion_rejects_stale_freight_before_order_or_payment")
   const report = { scope: "isolated_backend_workflow_slice", test_data: "synthetic_only", payment_provider: "pp_system_default_simulated_not_PSP_sandbox", cart_id: cartId, order_id: order.id, total_minor: 3000, shipping_minor: 0, checks, known_limits: ["No storefront integration or customer API authorization was shipped", "Combo price equals component sum, fixed bundle discounts pending", "Rule publication UI and concurrent revision governance pending", "No real PSP, merchant, delivery booking, Ads export or iFood operation", "order_created is not verified paid purchase"] }
