@@ -2,9 +2,7 @@
   "name": "vintage-commerce",
   "version": "0.1.0",
   "private": true,
-  "engines": {
-    "node": ">=22.16.0 <23"
-  },
+  "engines": { "node": ">=22.16.0 <23" },
   "scripts": {
     "dev": "medusa develop",
     "build": "medusa build",
@@ -12,7 +10,7 @@
     "db:migrate": "medusa db:migrate",
     "typecheck": "tsc --noEmit",
     "test:unit": "tsc -p tsconfig.unit.json && node --test tests/*.test.cjs",
-    "smoke:modules": "medusa exec ./src/scripts/smoke-modules.ts",
+    "smoke:modules": "medusa exec ./src/scripts/smoke-modules.ts && node scripts/smoke-queue-runtime.cjs",
     "smoke:http": "node scripts/smoke-http.mjs",
     "env:init": "node scripts/init-local-env.mjs"
   },
@@ -38,8 +36,6 @@
   "overrides": {
     "lodash": "4.18.1",
     "ajv": "8.18.0",
-    "bullmq@5.13.0": {
-      "uuid": "11.1.1"
-    }
+    "bullmq@5.13.0": { "uuid": "11.1.1" }
   }
 }

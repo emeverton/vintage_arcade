@@ -3,6 +3,18 @@ const fs = require('node:fs')
 const { chromium } = require('/tmp/vintage-browser/node_modules/playwright')
 const base='http://localhost:3000'
 async function wait(url){for(let i=0;i<60;i++){try{const r=await fetch(url);if(r.status<500)return r}catch{}await new Promise(r=>setTimeout(r,500))}throw new Error('Storefront did not start')}
+async function brandState(page) {
+  await page.waitForFunction(() => {
+    const el=document.querySelector('[data-testid="vintage-brand"]'), image=el?.querySelector('img')
+    return el?.getAttribute('data-brand-status')==='text-fallback' || (image?.complete && image.naturalWidth>0)
+  })
+  const brand=page.getByTestId('vintage-brand'), box=await brand.boundingBox()
+  assert.ok(box && box.width>=54 && box.height>=54,'Brand must have a visible reserved area')
+  const status=await brand.getAttribute('data-brand-status')
+  if(status==='text-fallback')assert.match(await brand.innerText(),/VINTAGE\s+ARCADE/)
+  else assert.ok(await brand.locator('img').evaluate(img=>img.naturalWidth>0 && img.naturalHeight>0))
+  return {status,width:box.width,height:box.height}
+}
 ;(async()=>{
   if(process.env.APP_ENV!=='test')throw new Error('Browser checkout checks are CI-only')
   await wait(base+'/pedido-teste');await wait('http://localhost:3002/pedido-teste')
@@ -21,7 +33,10 @@ async function wait(url){for(let i=0;i<60;i++){try{const r=await fetch(url);if(r
     const a=await browser.newContext({viewport:{width:1380,height:1000}}), b=await browser.newContext({viewport:{width:390,height:844}})
     const page=await a.newPage(), other=await b.newPage(), errors=[]
     page.on('pageerror',e=>errors.push(e.message));other.on('pageerror',e=>errors.push(e.message))
+    // Deliberately fail the image request in the mobile context to prove fallback behavior.
+    await other.route('**/images/vintage-arcade-logo.webp',route=>route.abort())
     await page.goto(base+'/pedido-teste');await page.getByRole('button',{name:'Adicionar combo de teste',exact:true}).waitFor()
+    const desktopBrand=await brandState(page)
     await page.getByRole('button',{name:'Adicionar combo de teste',exact:true}).click()
     await page.getByText('Faltam R$ 5,00 para frete grátis.').waitFor()
     assert.equal(await page.getByTestId('total').innerText(),'R$ 34,00')
@@ -60,11 +75,15 @@ async function wait(url){for(let i=0;i<60;i++){try{const r=await fetch(url);if(r
     pass('explicitly_confirmed_simulated_order_survives_reload_without_charge')
     await other.getByRole('button',{name:'Adicionar combo de teste',exact:true}).click()
     await other.getByText('Faltam R$ 5,00 para frete grátis.').waitFor()
+    const mobileBrand=await brandState(other)
+    assert.equal(mobileBrand.status,'text-fallback')
+    pass('brand_remains_readable_when_image_decode_or_download_fails')
     const overflow=await other.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth)
     assert.equal(overflow,false)
     await other.screenshot({path:'.cache/vintage-checkout-mobile.png',fullPage:true})
     assert.equal(errors.length,0)
     pass('mobile_cart_renders_without_horizontal_overflow_or_page_errors')
-    fs.writeFileSync('.cache/checkout-ui-report.json',JSON.stringify({scope:'chromium_desktop_and_mobile_viewport',checks,page_errors:errors,no_real_payment:true},null,2))
+    const queueRuntime=JSON.parse(fs.readFileSync('.cache/queue-runtime-report.json','utf8'))
+    fs.writeFileSync('.cache/checkout-ui-report.json',JSON.stringify({scope:'chromium_desktop_and_mobile_viewport',checks,page_errors:errors,no_real_payment:true,brand:{desktop:desktopBrand,mobile:mobileBrand},queue_runtime:queueRuntime},null,2))
   }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exit(1)})

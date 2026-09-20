@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import styles from "./preview.module.css"
+import PreviewBrand from "./brand"
 
 type Option = { variant_id: string; name: string; amount_minor: number }
 type Catalog = { name: string; postal_code: string; slots: { id: string; min: number; max: number; options: Option[] }[]; extra: Option }
@@ -53,7 +54,7 @@ export default function CheckoutPreview() {
   return <main className={styles.screen}>
     <div className={styles.wrap}>
       <header className={styles.header}>
-        <img src="/images/vintage-arcade-logo.webp" width="76" height="76" alt="Vintage Arcade" />
+        <PreviewBrand />
         <div><span className={styles.eyebrow}>VINTAGE COMMERCE / HOMOLOGAÇÃO</span><h1>Monte seu pedido de teste</h1><p>Escolhas, carrinho e frete conectados ao backend.</p></div>
       </header>
       <aside className={styles.notice}><strong>Simulação, sem venda real.</strong> Produtos e valores sintéticos. Não há cobrança, envio à cozinha ou acionamento de entregador. O catálogo comercial ainda será aprovado.</aside>
