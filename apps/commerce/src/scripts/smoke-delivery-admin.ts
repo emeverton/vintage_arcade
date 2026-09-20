@@ -28,8 +28,11 @@ export default async function smokeDeliveryAdmin({ container }: ExecArgs) {
   const service = container.resolve<VintageDeliveryService>("vintageDelivery")
   const fulfillment = container.resolve<IFulfillmentModuleService>(Modules.FULFILLMENT)
   const db = container.resolve<Db>(ContainerRegistrationKeys.PG_CONNECTION)
-  const [option] = await fulfillment.listShippingOptions({ provider_id: "vintage_vintage" })
-  if (!option || !option.name.startsWith("QA_")) throw new Error("Expected synthetic shipping fixture")
+  const originalCart = await readCart(container, previous.cart_id)
+  const optionId = originalCart.shipping_methods[0]?.shipping_option_id
+  if (!optionId) throw new Error("Synthetic source cart has no shipping option")
+  const option = await fulfillment.retrieveShippingOption(optionId)
+  if (option.provider_id !== "vintage_vintage" || !option.name.startsWith("QA_")) throw new Error("Expected synthetic shipping fixture")
   const bootstrap = parseDeliveryPolicy(option.data?.vintage_policy)
   const path = `/admin/vintage-delivery/${option.id}`
   async function api(role: string | null, method: string, route: string, body?: unknown, origin = baseUrl) {
@@ -86,7 +89,6 @@ export default async function smokeDeliveryAdmin({ container }: ExecArgs) {
   state = (await api("viewer", "GET", path)).body
   assert.equal(state.audit.length, 2); assert.equal(state.active_policy.threshold_minor, 2500)
   pass("publication_and_retry_commit_one_audit_with_optimistic_generation")
-  const originalCart = await readCart(container, previous.cart_id)
   const comboItems = originalCart.items.filter((item) => item.metadata?.vintage_combo_id)
   const comboId = String(comboItems[0].metadata!.vintage_combo_id)
   const address = { first_name: "QA", last_name: "Admin", address_1: "Synthetic fixture", country_code: "br", city: "QA", postal_code: "00000001" }
