@@ -23,13 +23,17 @@ jobs:
           node <<'NODE'
           const fs = require('node:fs');
           const p = JSON.parse(fs.readFileSync('package.json','utf8'));
+          const lock = JSON.parse(fs.readFileSync('package-lock.json','utf8'));
           if (p.dependencies['@medusajs/medusa'] !== '2.21.0') throw new Error('Unexpected Medusa version');
           p.overrides['bullmq@5.13.0'] = {uuid:'11.1.1'};
+          delete lock.packages['node_modules/bullmq/node_modules/uuid'];
           fs.writeFileSync('package.json', JSON.stringify(p,null,2)+'\n');
+          fs.writeFileSync('package-lock.json', JSON.stringify(lock,null,2)+'\n');
           NODE
           npm install --package-lock-only --ignore-scripts --no-audit --no-fund
           npm ci --include=dev --no-audit --no-fund
-          npm run test:unit
+          npm run test:unit > /tmp/vintage-uuid-unit-tests.txt
+          tail -10 /tmp/vintage-uuid-unit-tests.txt
           npm audit --omit=dev --json > /tmp/vintage-uuid-audit.json || true
           node <<'NODE'
           const assert=require('node:assert/strict'),fs=require('node:fs'),{createRequire}=require('node:module');
@@ -43,9 +47,21 @@ jobs:
           assert.throws(()=>uuid.v5('QA',uuid.v5.DNS,new Uint8Array(8),0),RangeError);
           const a=JSON.parse(fs.readFileSync('/tmp/vintage-uuid-audit.json','utf8'));
           assert.ok(a.metadata,'Audit result required');
-          assert.equal(a.metadata.vulnerabilities.total,0,'All runtime advisories must be closed before this candidate is committed');
+          assert.equal(a.metadata.vulnerabilities.total,0,'All runtime advisories must be closed before candidate commit');
           console.log('UUID_REMEDIATION_CANDIDATE_PASS: CommonJS resolution, bound checking, Medusa/BullMQ pins, unit tests and runtime audit');
           NODE
+      - name: Capture existing public brand asset without modifying it
+        if: always()
+        run: |
+          mkdir -p /tmp/vintage-brand-evidence
+          cp public/images/vintage-arcade-logo.webp /tmp/vintage-brand-evidence/
+          node -e "const fs=require('fs'),c=require('crypto'),b=fs.readFileSync('public/images/vintage-arcade-logo.webp');fs.writeFileSync('/tmp/vintage-brand-evidence/source.json',JSON.stringify({bytes:b.length,sha256:c.createHash('sha256').update(b).digest('hex'),riff_bytes:b.readUInt32LE(4)+8}))"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: existing-brand-diagnostic
+          path: /tmp/vintage-brand-evidence
+          retention-days: 7
       - name: Commit only manifest and lock on unchanged approved branch
         env:
           EXPECTED_SHA: ${{ github.sha }}
