@@ -112,7 +112,7 @@ jobs:
         env:
           NODE_ENV: production
         run: |
-          npm ci --no-audit --no-fund
+          npm ci --include=dev --no-audit --no-fund
           npm run build
       - name: Publish test evidence, never environment files
         if: always()
