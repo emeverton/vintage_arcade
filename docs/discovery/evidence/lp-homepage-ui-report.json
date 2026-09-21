@@ -1,0 +1,46 @@
+{
+  "desktop": {
+    "file": "docs/discovery/evidence/vintage-lp-desktop.png",
+    "overflow": {
+      "scrollWidth": 1380,
+      "clientWidth": 1380,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "brandStatus": [
+        "text-fallback",
+        "text-fallback"
+      ],
+      "primaryCta": [
+        "Ver cardápio / pedir",
+        "Ver cardápio / pedir",
+        "Consultar evento",
+        "Cardápio / pedido"
+      ],
+      "contrastSample": "rgb(255, 255, 255)"
+    },
+    "bytes": 861308
+  },
+  "mobile": {
+    "file": "docs/discovery/evidence/vintage-lp-mobile.png",
+    "overflow": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "brandStatus": [
+        "text-fallback",
+        "text-fallback"
+      ],
+      "primaryCta": [
+        "Ver cardápio / pedir",
+        "Ver cardápio / pedir",
+        "Consultar evento",
+        "Cardápio / pedido"
+      ],
+      "contrastSample": "rgb(255, 255, 255)"
+    },
+    "bytes": 636317
+  },
+  "page_errors": [],
+  "checked_at": "2026-09-21T11:19:45.418Z"
+}
