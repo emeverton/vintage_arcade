@@ -1,0 +1,70 @@
+{
+  "scope": "lp_release_isolated",
+  "base": "http://127.0.0.1:3010",
+  "desktop": {
+    "file": "docs/discovery/evidence/release-lp/vintage-lp-release-desktop.png",
+    "bytes": 873708,
+    "focused": {
+      "tag": "A",
+      "href": "#cardapio",
+      "text": "Cardápio"
+    },
+    "checks": {
+      "scrollWidth": 1380,
+      "clientWidth": 1380,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "hasSelectDecor": false,
+      "brandStatus": [
+        "text-fallback",
+        "text-fallback"
+      ],
+      "hoursCopy": true,
+      "menuCtas": 3,
+      "eventLinks": [
+        "Consultar evento",
+        "Consultar evento",
+        "Consultar evento"
+      ],
+      "whatsappOk": true,
+      "clipped": []
+    },
+    "page_errors": []
+  },
+  "mobile": {
+    "file": "docs/discovery/evidence/release-lp/vintage-lp-release-mobile.png",
+    "bytes": 635771,
+    "focused": {
+      "tag": "A",
+      "href": "#cardapio",
+      "text": "Cardápio"
+    },
+    "checks": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "hasSelectDecor": false,
+      "brandStatus": [
+        "text-fallback",
+        "text-fallback"
+      ],
+      "hoursCopy": true,
+      "menuCtas": 3,
+      "eventLinks": [
+        "Consultar evento",
+        "Consultar evento",
+        "Consultar evento"
+      ],
+      "whatsappOk": true,
+      "clipped": []
+    },
+    "page_errors": []
+  },
+  "routes": {
+    "home_expected": 200,
+    "pedido_teste": 404,
+    "vintage_test_catalog": 404
+  },
+  "checked_at": "2026-09-21T12:05:27.226Z"
+}

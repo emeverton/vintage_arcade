@@ -1,0 +1,81 @@
+name: Vintage LP release
+on:
+  push:
+    branches: [release/vintage-lp-v1]
+    paths: ['app/**', 'package*.json', 'tsconfig.json', 'next.config.mjs', 'tailwind.config.ts', 'postcss.config.js', '.github/workflows/lp-release.yml']
+  pull_request:
+    branches: [main]
+    paths: ['app/**', 'package*.json', 'tsconfig.json', 'next.config.mjs', 'tailwind.config.ts', 'postcss.config.js', '.github/workflows/lp-release.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vintage-lp-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Refuse commerce paths in this release tree
+        run: |
+          if [ -d apps/commerce ] || [ -d app/pedido-teste ] || [ -d app/api/vintage-test ] || [ -f middleware.ts ]; then
+            echo "Commerce/staging artifacts must not ship in the LP release"
+            exit 1
+          fi
+          test ! -f .github/workflows/commerce-foundation.yml
+      - name: Clean install
+        run: npm ci --include=dev --no-audit --no-fund
+      - name: Dependency audit report for LP runtime
+        run: |
+          npm audit --omit=dev --json > lp-runtime-audit.json || true
+          node -e 'const a=require("./lp-runtime-audit.json"); const v=a.metadata?.vulnerabilities||{}; console.log("LP_DEPENDENCY_AUDIT",JSON.stringify(v)); if((v.high||0)>0||(v.critical||0)>0) process.exit(1)'
+      - name: TypeScript
+        run: npx tsc --noEmit
+      - name: Production build
+        run: npm run build
+      - name: Start storefront and assert commerce routes absent
+        run: |
+          NODE_ENV=production PORT=3010 npm run start -- --hostname 127.0.0.1 --port 3010 > lp-serve.log 2>&1 &
+          echo $! > /tmp/vintage-lp.pid
+          for i in $(seq 1 30); do
+            code=$(curl -sf -o /dev/null -w "%{http_code}" http://127.0.0.1:3010/ || true)
+            [ "$code" = "200" ] && break
+            sleep 1
+          done
+          test "$code" = "200"
+          test "$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3010/pedido-teste)" = "404"
+          test "$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:3010/api/vintage-test/catalog)" = "404"
+          curl -s http://127.0.0.1:3010/ | tee homepage.html >/dev/null
+          ! grep -E 'pedido-teste|vintage-arcade-logo|SELECT →|validação comercial' homepage.html
+          grep -F 'Cardápio pelo WhatsApp' homepage.html
+          grep -F 'Consulte nossos horários pelo WhatsApp.' homepage.html
+      - name: Install browser tooling
+        run: |
+          npm install --prefix /tmp/vintage-lp-browser --ignore-scripts --no-audit --no-fund playwright@1.63.0
+          node /tmp/vintage-lp-browser/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Browser desktop and mobile checks
+        run: node scripts/smoke-lp-ui.cjs | tee lp-ui-results.txt
+      - name: Upload LP evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lp-release-evidence
+          path: |
+            lp-runtime-audit.json
+            lp-serve.log
+            lp-ui-results.txt
+            docs/discovery/evidence/release-lp/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Stop storefront
+        if: always()
+        run: test ! -f /tmp/vintage-lp.pid || kill "$(cat /tmp/vintage-lp.pid)" || true
