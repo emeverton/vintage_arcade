@@ -2,8 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Vintage Arcade | Landing Page',
-  description: 'LP interativa da Vintage Arcade inspirada em gabinete arcade clássico.'
+  title: 'Vintage Arcade | Bebedouro',
+  description:
+    'Food, games e nostalgia em Bebedouro. Peça pelo WhatsApp ou visite o salão arcade da Vintage.'
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
