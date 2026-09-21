@@ -1,7 +1,7 @@
 # Vintage Arcade: plano de homologação persistente
 
-Status: ORÇAMENTO APROVADO ATÉ US$ 40/MÊS. CÓDIGO DE STAGING EM IMPLEMENTAÇÃO NESTA BRANCH. PROVISIONAMENTO CONDICIONADO AO CI DO SHA IMPLANTÁVEL.
-Atualização: 21/09/2026. Orçamento operacional Vintage já autorizado pelo titular até US$ 40/mês de consumo adicional, antes de câmbio e tributos. Não configurar hard limit global de workspace.
+Status: ORÇAMENTO APROVADO ATÉ US$ 40/MÊS. CÓDIGO E CI DO STAGING APROVADOS NO SHA `12d82c7`. PROVISIONAMENTO BLOQUEADO: trial Railway expirado.
+Atualização: 21/09/2026. Tentativa de `railway init --name vintage-arcade-staging` rejeitada com "Your trial has expired. Please select a plan". Nenhum serviço Vintage foi criado. Projetos pré-existentes intactos.
 
 ## Decisão
 
