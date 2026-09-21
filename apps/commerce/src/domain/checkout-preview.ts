@@ -1,10 +1,28 @@
-/** Synthetic checkout only. Never enables a public or production storefront. */
+import { assertStagingDatabase, assertStagingHomologatorGate, isIsolatedPreviewEnv, rejectTestEnvOnHostedInfrastructure, validatePreviewBackendUrl, validatePreviewOriginUrl } from "./staging-runtime"
+
+/** Synthetic checkout only. Production remains blocked. Staging requires explicit HTTPS + homologator gate. */
 export function checkoutPreviewEnabled(env: Record<string, string | undefined>): boolean {
   const flag = env.VINTAGE_CHECKOUT_PREVIEW_ENABLED
   if (flag !== undefined && flag !== "true" && flag !== "false") throw new Error("Invalid checkout preview flag")
   if (flag !== "true") return false
-  if (!["local", "test"].includes(env.APP_ENV || "") || env.VINTAGE_SLICE_ENABLED !== "true") throw new Error("Checkout preview requires isolated local/test slice")
+  rejectTestEnvOnHostedInfrastructure(env)
+  if (!isIsolatedPreviewEnv(env.APP_ENV) || env.VINTAGE_SLICE_ENABLED !== "true") {
+    throw new Error("Checkout preview requires isolated local/test/staging slice")
+  }
+  if (env.APP_ENV === "production") throw new Error("Checkout preview is not approved for production")
   if (!/^[a-f0-9]{64}$/.test(env.VINTAGE_PREVIEW_SERVICE_SECRET || "")) throw new Error("Missing private preview service credential")
+  if (env.APP_ENV === "staging") {
+    assertStagingDatabase(env)
+    assertStagingHomologatorGate(env)
+    if (!env.VINTAGE_PREVIEW_FIXTURE_JSON?.trim()) throw new Error("Staging requires persistent VINTAGE_PREVIEW_FIXTURE_JSON")
+    if (env.VINTAGE_PREVIEW_FIXTURE_FILE) throw new Error("Staging must not depend on ephemeral fixture files")
+    try {
+      validatePreviewOriginUrl(new URL(env.VINTAGE_PREVIEW_ORIGIN || ""), "staging")
+      validatePreviewBackendUrl(new URL(env.VINTAGE_PREVIEW_BACKEND_URL || ""), "staging")
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : "Invalid staging preview URLs")
+    }
+  }
   return true
 }
 

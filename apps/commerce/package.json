@@ -12,7 +12,8 @@
     "test:unit": "tsc -p tsconfig.unit.json && node --test tests/*.test.cjs",
     "smoke:modules": "medusa exec ./src/scripts/smoke-modules.ts && node scripts/smoke-queue-runtime.cjs",
     "smoke:http": "node scripts/smoke-http.mjs",
-    "env:init": "node scripts/init-local-env.mjs"
+    "env:init": "node scripts/init-local-env.mjs",
+    "staging:bootstrap": "medusa exec ./src/scripts/bootstrap-staging-fixtures.ts"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.21.0",

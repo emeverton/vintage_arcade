@@ -50,4 +50,14 @@ CI has no deployment step. An isolated follow-up job can commit only the initial
 
 ## Not implemented yet
 
-Rule persistence/admin UI, food modifiers/combos, cart-to-fulfillment integration, real checkout/PSP, transactional outbox/inbox, iFood adapter, analytics export, persistent staging and production release. Those gates remain open.
+Rule persistence beyond the delivery backoffice, food modifiers beyond the synthetic combo, real checkout/PSP, transactional outbox/inbox, iFood adapter, analytics export and production release. Staging persistent hosting is implemented in code on this branch and provisioned only after CI on the deployable SHA.
+
+## Staging bootstrap
+
+Requires `APP_ENV=staging`, database name `vintage_staging`, homologator Basic Auth credentials and persistent `VINTAGE_PREVIEW_FIXTURE_JSON`. After migrations:
+
+```bash
+npm run staging:bootstrap
+```
+
+The command is idempotent, refuses `vintage_ci` and GitHub Actions, and prints `STAGING_FIXTURE_JSON=...` for the Railway variable. Do not run CI-only seeds against staging.

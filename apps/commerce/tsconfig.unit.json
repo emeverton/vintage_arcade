@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022", "module": "CommonJS", "moduleResolution": "Node",
-    "strict": true, "outDir": ".test-build", "rootDir": "src", "types": [],
+    "strict": true, "outDir": ".test-build", "rootDir": "src", "types": ["node"],
     "lib": ["ES2022", "DOM"], "skipLibCheck": true
   },
   "include": ["src/domain/**/*.ts", "src/config/environment.ts"]

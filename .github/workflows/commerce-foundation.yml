@@ -2,10 +2,10 @@ name: Vintage commerce foundation
 on:
   push:
     branches: [foundation/vintage-commerce-v1]
-    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
+    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'middleware.ts', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
   pull_request:
     branches: [main]
-    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
+    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'middleware.ts', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -84,6 +84,7 @@ jobs:
         run: |
           npm run test:unit | tee unit-test-results.txt
           npm run typecheck
+          node -e "const fs=require('fs');const a=fs.readFileSync('../../lib/staging-runtime.ts','utf8');const b=fs.readFileSync('src/domain/staging-runtime.ts','utf8');for (const fn of ['validatePreviewOriginUrl','validatePreviewBackendUrl','authorizeStagingBasic','isIsolatedPreviewEnv']){if(!a.includes('function '+fn)||!b.includes('function '+fn))process.exit(1)};console.log('STOREFRONT_STAGING_HELPERS_ALIGNED')"
       - name: Apply migrations twice
         working-directory: apps/commerce
         run: |

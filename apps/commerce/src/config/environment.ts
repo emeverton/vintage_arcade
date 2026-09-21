@@ -17,6 +17,9 @@ export function readEnvironment(env: RuntimeEnvironment): ValidatedEnvironment {
   const appEnv = env.APP_ENV || "local"
   if (!["local", "test", "staging", "production"].includes(appEnv)) throw new Error("Invalid APP_ENV")
   const remote = appEnv === "staging" || appEnv === "production"
+  if (appEnv === "test" && (env.RAILWAY_ENVIRONMENT || env.RAILWAY_PROJECT_ID || env.RENDER || env.FLY_APP_NAME || env.VERCEL)) {
+    throw new Error("APP_ENV=test is forbidden on hosted infrastructure")
+  }
   function required(name: string): string {
     const value = env[name]?.trim()
     if (!value) throw new Error(`Missing ${name}`)
@@ -27,6 +30,9 @@ export function readEnvironment(env: RuntimeEnvironment): ValidatedEnvironment {
     let url: URL
     try { url = new URL(value) } catch { throw new Error(`Invalid ${name}`) }
     if (!schemes.includes(url.protocol) || !url.hostname) throw new Error(`Invalid ${name}`)
+    if (appEnv === "staging" && name === "DATABASE_URL" && url.pathname !== "/vintage_staging") {
+      throw new Error("Staging DATABASE_URL must use database vintage_staging")
+    }
     return value
   }
   function secret(name: string): string {
@@ -48,6 +54,13 @@ export function readEnvironment(env: RuntimeEnvironment): ValidatedEnvironment {
   if (workerMode !== "shared" && workerMode !== "server" && workerMode !== "worker") throw new Error("Invalid MEDUSA_WORKER_MODE")
   for (const flag of ["IFOOD_ENABLED", "PAYMENTS_LIVE_ENABLED", "ADS_EXPORT_ENABLED"] as const) {
     if (env[flag] && env[flag] !== "false") throw new Error(`${flag} is not implemented in this bootstrap`)
+  }
+  if (appEnv === "staging") {
+    const user = env.VINTAGE_STAGING_BASIC_USER || ""
+    const password = env.VINTAGE_STAGING_BASIC_PASSWORD || ""
+    if (user.length < 3 || password.length < 16 || /change.?me|example|password|admin/i.test(password)) {
+      throw new Error("Staging requires strong homologator basic credentials")
+    }
   }
   const jwtSecret = secret("JWT_SECRET")
   const cookieSecret = secret("COOKIE_SECRET")

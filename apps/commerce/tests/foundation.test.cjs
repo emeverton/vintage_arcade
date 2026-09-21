@@ -19,8 +19,27 @@ for (const [name, changes] of [['negative amount', { quotedFeeMinor: -1 }], ['fr
 }
 test('quote does not mutate input', () => { const frozen = Object.freeze({ ...base }); quote(frozen); assert.deepEqual(frozen, base) })
 test('configuration accepts isolated test environment', () => assert.equal(readEnvironment(env).workerMode, 'shared'))
-for (const [name, changes] of [['missing database', { DATABASE_URL: '' }], ['missing Redis', { REDIS_URL: '' }], ['wrong database scheme', { DATABASE_URL: 'https://localhost' }], ['short secret', { JWT_SECRET: 'short' }], ['same secrets', { COOKIE_SECRET: env.JWT_SECRET }], ['wildcard CORS', { STORE_CORS: '*' }], ['path in CORS', { STORE_CORS: 'http://localhost/shop' }], ['unsafe remote origin', { APP_ENV: 'staging' }], ['invalid worker', { MEDUSA_WORKER_MODE: 'invalid' }], ['iFood enabled prematurely', { IFOOD_ENABLED: 'true' }], ['live payments enabled', { PAYMENTS_LIVE_ENABLED: 'true' }], ['ads enabled', { ADS_EXPORT_ENABLED: 'true' }]]) {
+for (const [name, changes] of [['missing database', { DATABASE_URL: '' }], ['missing Redis', { REDIS_URL: '' }], ['wrong database scheme', { DATABASE_URL: 'https://localhost' }], ['short secret', { JWT_SECRET: 'short' }], ['same secrets', { COOKIE_SECRET: env.JWT_SECRET }], ['wildcard CORS', { STORE_CORS: '*' }], ['path in CORS', { STORE_CORS: 'http://localhost/shop' }], ['unsafe remote origin', { APP_ENV: 'staging' }], ['invalid worker', { MEDUSA_WORKER_MODE: 'invalid' }], ['iFood enabled prematurely', { IFOOD_ENABLED: 'true' }], ['live payments enabled', { PAYMENTS_LIVE_ENABLED: 'true' }], ['ads enabled', { ADS_EXPORT_ENABLED: 'true' }], ['test on railway', { APP_ENV: 'test', RAILWAY_ENVIRONMENT: 'production' }]]) {
   test(name + ' fails closed', () => assert.throws(() => readEnvironment({ ...env, ...changes })))
 }
 test('worker always disables admin', () => assert.equal(readEnvironment({ ...env, MEDUSA_WORKER_MODE: 'worker' }).adminDisabled, true))
-test('staging accepts explicit HTTPS origins', () => assert.equal(readEnvironment({ ...env, APP_ENV: 'staging', STORE_CORS: 'https://shop.test', ADMIN_CORS: 'https://admin.test', AUTH_CORS: 'https://shop.test,https://admin.test' }).appEnv, 'staging'))
+test('staging accepts explicit HTTPS origins and vintage_staging database', () => assert.equal(readEnvironment({
+  ...env,
+  APP_ENV: 'staging',
+  DATABASE_URL: 'postgres://test:test@private.railway.internal:5432/vintage_staging',
+  STORE_CORS: 'https://shop.test',
+  ADMIN_CORS: 'https://admin.test',
+  AUTH_CORS: 'https://shop.test,https://admin.test',
+  VINTAGE_STAGING_BASIC_USER: 'homolog',
+  VINTAGE_STAGING_BASIC_PASSWORD: 's'.repeat(16),
+}).appEnv, 'staging'))
+test('staging rejects wrong database name', () => assert.throws(() => readEnvironment({
+  ...env,
+  APP_ENV: 'staging',
+  DATABASE_URL: 'postgres://test:test@private.railway.internal:5432/railway',
+  STORE_CORS: 'https://shop.test',
+  ADMIN_CORS: 'https://admin.test',
+  AUTH_CORS: 'https://shop.test,https://admin.test',
+  VINTAGE_STAGING_BASIC_USER: 'homolog',
+  VINTAGE_STAGING_BASIC_PASSWORD: 's'.repeat(16),
+})))

@@ -29,4 +29,6 @@ test('cross-channel combo rejected',()=>assert.throws(()=>expandCombo(spec,selec
 test('reversed slot bounds rejected',()=>assert.throws(()=>parseComboSpec({...spec,slots:[{...spec.slots[0],min:2,max:1}]})))
 test('disabled by default',()=>assert.equal(sliceEnabled({APP_ENV:'test'}),false))
 test('test slice allowed',()=>assert.equal(sliceEnabled({APP_ENV:'test',VINTAGE_SLICE_ENABLED:'true'}),true))
-for (const APP_ENV of ['staging','production',undefined]) test(`cannot enable slice in ${APP_ENV}`,()=>assert.throws(()=>sliceEnabled({APP_ENV,VINTAGE_SLICE_ENABLED:'true'})))
+test('local slice allowed',()=>assert.equal(sliceEnabled({APP_ENV:'local',VINTAGE_SLICE_ENABLED:'true'}),true))
+test('staging slice allowed',()=>assert.equal(sliceEnabled({APP_ENV:'staging',VINTAGE_SLICE_ENABLED:'true'}),true))
+for (const APP_ENV of ['production',undefined]) test(`cannot enable slice in ${APP_ENV}`,()=>assert.throws(()=>sliceEnabled({APP_ENV,VINTAGE_SLICE_ENABLED:'true'})))
