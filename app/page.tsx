@@ -61,9 +61,21 @@ const menuHighlights = [
 ];
 
 const events = [
-  ['Arcade Party', 'Aniversários e pequenos grupos com reserva e clima de arcade.'],
-  ['Noite em turma', 'Encontro de amigos ou família com comida, jogos e tempo para ficar.'],
-  ['Fase especial', 'Noites temáticas e ativações sob consulta com a equipe.']
+  {
+    title: 'Arcade Party',
+    text: 'Aniversários e pequenos grupos com reserva e clima de arcade.',
+    href: `${WHATSAPP}?text=${encodeURIComponent('Oi, quero consultar um Arcade Party / aniversário na Vintage Arcade.')}`
+  },
+  {
+    title: 'Noite em turma',
+    text: 'Encontro de amigos ou família com comida, jogos e tempo para ficar.',
+    href: `${WHATSAPP}?text=${encodeURIComponent('Oi, quero consultar uma Noite em turma na Vintage Arcade.')}`
+  },
+  {
+    title: 'Fase especial',
+    text: 'Noites temáticas e ativações sob consulta com a equipe.',
+    href: `${WHATSAPP}?text=${encodeURIComponent('Oi, quero consultar uma Fase especial / evento temático na Vintage Arcade.')}`
+  }
 ];
 
 export default function HomePage() {
@@ -123,7 +135,7 @@ export default function HomePage() {
 
                     <div className="mt-5 flex w-full max-w-lg flex-col gap-3 sm:mt-6 sm:flex-row sm:justify-center">
                       <a href={MENU_WHATSAPP} target="_blank" rel="noreferrer" className="retro-btn retro-btn-primary flex-1">
-                        Ver cardápio / pedir
+                        Cardápio pelo WhatsApp
                       </a>
                       <a href={VISIT_WHATSAPP} target="_blank" rel="noreferrer" className="retro-btn retro-btn-secondary flex-1">
                         Reservar visita
@@ -200,12 +212,14 @@ export default function HomePage() {
                 </div>
 
                 <div className="grid gap-3 md:grid-cols-3 md:gap-4">
-                  {events.map(([title, text], index) => (
-                    <article key={title} className="event-card event-card-compact">
+                  {events.map((event, index) => (
+                    <article key={event.title} className="event-card event-card-compact">
                       <div className="event-card-level">LV.{index + 1}</div>
-                      <h3>{title}</h3>
-                      <p>{text}</p>
-                      <span>SELECT →</span>
+                      <h3>{event.title}</h3>
+                      <p>{event.text}</p>
+                      <a href={event.href} target="_blank" rel="noreferrer" className="event-card-link">
+                        Consultar evento
+                      </a>
                     </article>
                   ))}
                 </div>
@@ -227,8 +241,8 @@ export default function HomePage() {
                     <br />
                     Telefone e WhatsApp: (17) 3340-2000.
                   </p>
-                  <p className="mt-3 text-xs leading-5 text-white/45">
-                    Horários de funcionamento sob confirmação pelo WhatsApp ou Instagram — não publicados aqui até validação comercial.
+                  <p className="mt-3 text-xs leading-5 text-white/55">
+                    Consulte nossos horários pelo WhatsApp.
                   </p>
                 </div>
 
@@ -238,7 +252,7 @@ export default function HomePage() {
                     <strong>PRONTO?</strong>
                   </div>
                   <a href={MENU_WHATSAPP} target="_blank" rel="noreferrer" className="retro-btn retro-btn-primary w-full text-center">
-                    Cardápio / pedido
+                    Cardápio pelo WhatsApp
                   </a>
                   <a href={GENERIC_WHATSAPP} target="_blank" rel="noreferrer" className="retro-btn retro-btn-secondary w-full text-center">
                     WhatsApp

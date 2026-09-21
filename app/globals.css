@@ -472,6 +472,22 @@ a:focus-visible {
 .event-card h4 { margin: 1rem 0 0; font-size: 1.05rem; text-transform: uppercase; }
 .event-card p { margin: .75rem 0 0; color: rgba(255,255,255,.62); font-size: .84rem; line-height: 1.55; }
 .event-card > span { display: inline-block; margin-top: 1.2rem; color: #FF4FA3; font-size: .65rem; font-weight: 900; letter-spacing: .16em; }
+.event-card-link {
+  display: inline-block;
+  margin-top: 1.2rem;
+  color: #FF4FA3;
+  font-size: .65rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.event-card-link:hover { color: #FFD031; }
+.event-card-link:focus-visible {
+  outline: 2px solid #FFD031;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
 
 @media (max-width: 768px) {
   .arcade-shell::before,

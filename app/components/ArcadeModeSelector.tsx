@@ -22,7 +22,7 @@ const modes: Mode[] = [
     label: 'PEDIR',
     title: 'Peça sandubas, porções e bebidas',
     text: 'Fale com a Vintage pelo WhatsApp para ver o cardápio e montar seu pedido para delivery ou retirada.',
-    cta: 'Ver cardápio / pedir',
+    cta: 'Cardápio pelo WhatsApp',
     href: `${WHATSAPP}?text=${encodeURIComponent('Oi, quero ver o cardápio e fazer um pedido na Vintage Arcade.')}`,
     tone: 'yellow'
   },
