@@ -1,7 +1,9 @@
 # Vintage Arcade: plano de homologação persistente
 
-Status: ORÇAMENTO APROVADO ATÉ US$ 40/MÊS. CÓDIGO E CI DO STAGING APROVADOS NO SHA `12d82c7`. PROVISIONAMENTO BLOQUEADO: trial Railway expirado.
+Status: ORÇAMENTO APROVADO ATÉ US$ 40/MÊS. CÓDIGO E CI DO STAGING APROVADOS NO SHA `12d82c7`. **PROVISIONAMENTO BLOQUEADO**: trial Railway expirado.
 Atualização: 21/09/2026. Tentativa de `railway init --name vintage-arcade-staging` rejeitada com "Your trial has expired. Please select a plan". Nenhum serviço Vintage foi criado. Projetos pré-existentes intactos.
+
+**Gate D = BLOQUEADO.** Não repetir provisionamento enquanto billing estiver bloqueado. Avançar código/docs independentemente (Gates A–C/E mocks).
 
 ## Decisão
 

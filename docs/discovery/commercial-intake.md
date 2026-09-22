@@ -1,23 +1,115 @@
 # Vintage Arcade: entradas para homologação comercial
 
-Status: AGUARDANDO VALIDAÇÃO. Responsável pelas regras e aprovação: Vintage Arcade. Responsável pela tradução técnica e QA: Veltrus.
+Status: CHECKLIST OPERACIONAL — dados reais **PENDENTE**.  
+Fixtures sintéticas (R$ 25 / R$ 9 / CEP `00000001` etc.) **não** são oferta real.  
+Responsável comercial: Vintage Arcade. Tradução técnica/QA: Veltrus.
 
-Não transportar R$ 25,00, R$ 9,00, R$ 30,00, CEP 00000001 ou endereços das fixtures para uma oferta real.
+Legenda: `PENDENTE` · `APROVADO` · `N/A` · `BLOQUEADO`
 
-| Entrada | Informação necessária | Evidência de aprovação |
+Preencher `aprovado_por`, `aprovado_em`, `versão`, `fonte` antes de publicar qualquer regra.
+
+---
+
+## CATÁLOGO
+
+| Item | Status | Evidência / notas |
 | --- | --- | --- |
-| Catálogo | Exportação atual, SKU, nome, descrição, preço, disponibilidade e imagem aprovada | Pendente |
-| Primeiro combo | Nome, preço total ou soma de componentes, slots, escolhas permitidas, mínimos/máximos e acréscimos | Pendente |
-| Adicionais | Itens que alteram preço, ingredientes removíveis, limites e comportamento no preparo | Pendente |
-| Agenda comercial | Dias da semana, horário de abertura/fechamento, timezone, feriados e indisponibilidade | Pendente |
-| Entrega | Áreas atendidas, taxas, pedido mínimo, retirada, ETA e responsável pela entrega | Pendente |
-| Incentivo de frete | Valor mínimo elegível, cálculo antes/depois de descontos, zonas, horário, teto do subsídio e acumulação com cupons | Pendente |
-| Pagamento | PSP escolhido, sandbox, métodos aceitos, criação/confirmação/cancelamento/reembolso e titular da conta | Pendente |
-| iFood | Merchant/aplicação corretos, permissões concedidas, homologação e módulos disponíveis | Pendente |
-| Operação | Quem recebe/confirma/prepara/despacha, capacidade, pausas e cancelamentos | Pendente |
-| Marca | Arquivo íntegro do logotipo original; o WebP atual está truncado | Pendente |
-| Homologadores | Pessoas autorizadas, papel e canal de aprovação | Pendente |
+| Lista de produtos (nome, descrição) | PENDENTE | |
+| SKUs estáveis | PENDENTE | |
+| Categorias | PENDENTE | |
+| Modificadores / adicionais que alteram preço | PENDENTE | |
+| Remoções (ingredientes) e impacto em preparo | PENDENTE | |
+| Disponibilidade por item / pausas | PENDENTE | |
+| Combos (slots, min/max, acréscimos) | PENDENTE | Inclui COMBO_V2 no canal iFood |
+| Imagens aprovadas | PENDENTE | WebP atual truncado — logo íntegro pendente |
+| Exportação atual do cardápio | PENDENTE | |
 
-A primeira bateria comercial deve cobrir: pedido abaixo do mínimo; um centavo abaixo/no/acima do benefício; adicional obrigatório ausente; troca com acréscimo; remoção que perde benefício; endereço não atendido; regra alterada depois da cotação; pagamento pendente/falho/confirmado; confirmação duplicada; indisponibilidade da cozinha.
+## PREÇO
 
-Para o cronograma, considerar o prazo de acesso e aprovação como dependência explícita. CI sintético aprovado não fecha estas entradas. Documentar aprovado_por, aprovado_em, versão e fonte de cada regra antes de publicar.
+| Item | Status | Evidência / notas |
+| --- | --- | --- |
+| Preço unitário por SKU | PENDENTE | |
+| Combo: preço fixo **ou** soma de componentes | PENDENTE | Escolher e documentar |
+| Regras promocionais | PENDENTE | |
+| Limites de desconto | PENDENTE | |
+| Teto de subsídio (frete/promo) | PENDENTE | |
+| Acumulação com cupons | PENDENTE | |
+
+## ENTREGA
+
+| Item | Status | Evidência / notas |
+| --- | --- | --- |
+| CEPs / raios atendidos | PENDENTE | |
+| Taxa base | PENDENTE | |
+| Distância / faixas | PENDENTE | |
+| Pedido mínimo | PENDENTE | |
+| Threshold frete grátis | PENDENTE | |
+| Horários de entrega | PENDENTE | |
+| Indisponibilidade / pausas | PENDENTE | |
+| Retirada no salão | PENDENTE | |
+| ETA e responsável pela entrega | PENDENTE | |
+
+## PAGAMENTOS
+
+| Item | Status | Evidência / notas |
+| --- | --- | --- |
+| PSP escolhido | PENDENTE | Adapter mock existe; live off (`PAYMENTS_LIVE_ENABLED=false`) |
+| Métodos (Pix, cartão, …) | PENDENTE | |
+| Pagamento na entrega | PENDENTE | Confirmar se existe |
+| Fluxo create / authorize / capture | PENDENTE | |
+| Cancelamento / reembolso | PENDENTE | |
+| Titular da conta / sandbox | PENDENTE | |
+
+## OPERAÇÃO
+
+| Item | Status | Evidência / notas |
+| --- | --- | --- |
+| Quem recebe / confirma / prepara / despacha | PENDENTE | |
+| Cozinha / capacidade | PENDENTE | |
+| Impressora / KDS | PENDENTE | |
+| SLA de aceite / rejeição | PENDENTE | |
+| Política de cancelamento | PENDENTE | |
+| Canal de suporte | PENDENTE | |
+
+## CANAIS
+
+| Canal | Status | Notas |
+| --- | --- | --- |
+| Site próprio (LP) | APROVADO (marketing) | Produção Vercel alinhada à main; commerce ainda sintético |
+| WhatsApp | PENDENTE | Número existente na LP; fluxo pedido formal PENDENTE |
+| iFood | PENDENTE | Adapter/mocks no código; `IFOOD_ENABLED=false`; credenciais/homologação PENDENTE |
+| Retirada | PENDENTE | |
+| Salão | PENDENTE | |
+
+## MARCA
+
+| Item | Status | Evidência / notas |
+| --- | --- | --- |
+| Logo íntegro | PENDENTE | Asset truncado quarantinado |
+| Cores / tipografia | PENDENTE | |
+| Assets de campanha | PENDENTE | |
+| Crédito/selo de autoria | WIP isolado | Branch local `wip/vintage-brand-seal` — **não** bloquear site |
+
+## HOMOLOGADORES
+
+| Nome | Papel | Canal | Status |
+| --- | --- | --- | --- |
+| | Aprovação comercial | | PENDENTE |
+| | Operação / cozinha | | PENDENTE |
+| | QA técnico Veltrus | | PENDENTE |
+
+## Bateria mínima de aceite (quando houver dados reais)
+
+1. Pedido abaixo do mínimo  
+2. Um centavo abaixo / no / acima do benefício de frete  
+3. Adicional obrigatório ausente  
+4. Troca com acréscimo  
+5. Remoção que perde benefício  
+6. Endereço não atendido  
+7. Regra alterada depois da cotação  
+8. Pagamento pendente / falho / confirmado  
+9. Confirmação duplicada  
+10. Indisponibilidade da cozinha  
+11. Webhook iFood com assinatura inválida / evento duplicado / fora de sequência  
+
+CI sintético **não** fecha estas entradas. Prazo de acesso iFood/PSP é dependência explícita do cronograma.
