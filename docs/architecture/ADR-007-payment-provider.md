@@ -1,29 +1,32 @@
 # ADR-007 — Payment provider boundary
 
-Status: Accepted (mock adapter)  
-Date: 2026-09-21
+Status: Accepted (mock + Mercado Pago sandbox offline)  
+Date: 2026-09-21 · updated 2026-09-22
 
 ## Decision
 
 Payments are an adapter behind `PaymentProvider`. Vintage owns order state transitions; the PSP never becomes source of truth for catalog or delivery rules.
 
+PSP inicial: **Mercado Pago** (sandbox Gate E).
+
 ## Defaults
 
 - `PAYMENTS_LIVE_ENABLED=false`
-- Mock provider: create → authorize → capture; cancel; refund; webhook with event idempotency
-- Partial refund unsupported in mock
-- No live PSP until Gate E (sandbox) / Gate H (live) with explicit approval
+- `MERCADOPAGO_LIVE_ENABLED=false`
+- Mock + MP sandbox offline until credentials
+- No live PSP until Gate H with explicit approval
 
 ## Code
 
-- `apps/commerce/src/domain/payments/provider.ts`
+- Contract + mock: `apps/commerce/src/domain/payments/provider.ts`
+- Mercado Pago sandbox: `apps/commerce/src/domain/payments/mercadopago-sandbox.ts`
 - Tests: `apps/commerce/tests/payments-telemetry-anomaly.test.cjs`
 
-## Pending commercial choice
+## Pending
 
 | Item | Status |
 | --- | --- |
-| PSP vendor | PENDENTE |
+| Sandbox credentials / webhook secret | PENDENTE |
 | Pix / card methods | PENDENTE |
 | Pay-on-delivery | PENDENTE |
-| Sandbox credentials | PENDENTE |
+| HTTP client against MP API | PENDENTE (Gate E) |

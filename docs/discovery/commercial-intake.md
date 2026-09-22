@@ -53,12 +53,12 @@ Preencher `aprovado_por`, `aprovado_em`, `versão`, `fonte` antes de publicar qu
 
 | Item | Status | Evidência / notas |
 | --- | --- | --- |
-| PSP escolhido | PENDENTE | Adapter mock existe; live off (`PAYMENTS_LIVE_ENABLED=false`) |
-| Métodos (Pix, cartão, …) | PENDENTE | |
+| PSP escolhido | APROVADO (sandbox) | **Mercado Pago** — live off (`PAYMENTS_LIVE_ENABLED=false`) |
+| Métodos (Pix, cartão, …) | PENDENTE | Confirmar no sandbox MP |
 | Pagamento na entrega | PENDENTE | Confirmar se existe |
-| Fluxo create / authorize / capture | PENDENTE | |
+| Fluxo create / authorize / capture | PENDENTE | Adapter contract + mock; MP sandbox next |
 | Cancelamento / reembolso | PENDENTE | |
-| Titular da conta / sandbox | PENDENTE | |
+| Titular da conta / sandbox | PENDENTE | Credenciais MP sandbox |
 
 ## OPERAÇÃO
 

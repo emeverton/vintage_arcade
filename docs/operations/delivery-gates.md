@@ -9,8 +9,8 @@ Commerce **não** faz merge em `main` sem gate explícito de go-live.
 | **A** | commerce synthetic complete | Frete, combos, cart incentives, checkout sintético, quote expiry, simulated order, unit+smoke PASS, APP_ENV staging preparado no código | **PASS** (código; staging host BLOQUEADO) |
 | **B** | iFood adapter complete with mocks | ACL, OAuth mock, catalog/COMBO_V2 map, ingest, assinatura, idempotência, retries, DLQ, polling fixture, `IFOOD_ENABLED=false`, testes unitários | **PASS** (mocks; live = Gate F) |
 | **C** | commercial data approved | `docs/discovery/commercial-intake.md` sem itens críticos PENDENTE; homologadores nomeados; fixtures ≠ dados reais | **PENDENTE** (checklist pronto; dados PENDENTE) |
-| **D** | staging live | Projeto `vintage-arcade-staging` no Railway, HTTPS, Basic Auth, private net, migrations, bootstrap, backup/restore | **BLOQUEADO** (trial Railway expirado) |
-| **E** | PSP sandbox | Provider real em sandbox + webhooks; ainda `PAYMENTS_LIVE_ENABLED=false` em prod | **PENDENTE** (interface mock pronta; PSP não escolhido) |
+| **D** | staging live | Projeto `vintage-arcade-staging` no Railway, HTTPS, Basic Auth, private net, migrations, bootstrap, backup/restore · host futuro `homolog.vintagearcade.com.br` | **BLOQUEADO** (trial Railway expirado) |
+| **E** | PSP sandbox | **Mercado Pago** sandbox + webhooks; `PAYMENTS_LIVE_ENABLED=false` | **PENDENTE** (adapter mock → MP sandbox) |
 | **F** | iFood homologation | Credenciais reais, OAuth live, webhook endpoint, polling live, aceite merchant | **PENDENTE** (credenciais) |
 | **G** | pilot internal | Pedidos reais controlados, operação/KDS, tracking sem Ads export | **PENDENTE** |
 | **H** | controlled launch | Soft launch com feature flags; Ads export só com decisão | **PENDENTE** |

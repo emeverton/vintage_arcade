@@ -115,3 +115,21 @@ test('anomaly rejects tiny min_sample policy', () => {
     successes: 5, attempts: 10, min_sample: 5,
   }, { successes: 1, attempts: 10, persistence_windows: 3, required_persistence: 2 }, 0.5))
 })
+
+test('Mercado Pago sandbox offline provider', () => {
+  const {
+    createMercadoPagoSandboxProvider,
+    assertMercadoPagoSandboxOnly,
+  } = require('../.test-build/domain/payments/mercadopago-sandbox.js')
+  assert.throws(() => assertMercadoPagoSandboxOnly({ MERCADOPAGO_LIVE_ENABLED: 'true' }))
+  assert.throws(() => createMercadoPagoSandboxProvider({
+    access_token: 'TEST-xxxx', webhook_secret: 'whsec', offline: false,
+  }))
+  const mp = createMercadoPagoSandboxProvider({
+    access_token: 'TEST-sandbox-token', webhook_secret: 'whsec', offline: true,
+  })
+  const s = mp.createSession({ order_ref: 'o_mp', amount_minor: 1990, idempotency_key: 'mp1' })
+  assert.equal(s.provider, 'mercadopago_sandbox')
+  assert.equal(mp.authorize(s.id).status, 'authorized')
+  assert.equal(mp.capture(s.id).status, 'captured')
+})
