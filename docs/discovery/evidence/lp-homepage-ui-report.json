@@ -1,0 +1,74 @@
+{
+  "desktop": {
+    "file": "/Users/veltrus/vintage_arcade/docs/discovery/evidence/vintage-lp-desktop.png",
+    "bytes": 873722,
+    "focused": {
+      "tag": "A",
+      "href": "#cardapio",
+      "text": "Cardápio"
+    },
+    "checks": {
+      "scrollWidth": 1380,
+      "clientWidth": 1380,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "hasSelectDecor": false,
+      "hoursCopy": true,
+      "internalHours": false,
+      "menuCtas": 3,
+      "eventLinks": [
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20um%20Arcade%20Party%20%2F%20anivers%C3%A1rio%20na%20Vintage%20Arcade."
+        },
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20uma%20Noite%20em%20turma%20na%20Vintage%20Arcade."
+        },
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20uma%20Fase%20especial%20%2F%20evento%20tem%C3%A1tico%20na%20Vintage%20Arcade."
+        }
+      ],
+      "whatsappHosts": true,
+      "clipped": []
+    }
+  },
+  "mobile": {
+    "file": "/Users/veltrus/vintage_arcade/docs/discovery/evidence/vintage-lp-mobile.png",
+    "bytes": 635771,
+    "focused": {
+      "tag": "A",
+      "href": "#cardapio",
+      "text": "Cardápio"
+    },
+    "checks": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "hasLogoImg": false,
+      "hasPedidoTeste": false,
+      "hasSelectDecor": false,
+      "hoursCopy": true,
+      "internalHours": false,
+      "menuCtas": 3,
+      "eventLinks": [
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20um%20Arcade%20Party%20%2F%20anivers%C3%A1rio%20na%20Vintage%20Arcade."
+        },
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20uma%20Noite%20em%20turma%20na%20Vintage%20Arcade."
+        },
+        {
+          "text": "Consultar evento",
+          "href": "https://wa.me/551733402000?text=Oi%2C%20quero%20consultar%20uma%20Fase%20especial%20%2F%20evento%20tem%C3%A1tico%20na%20Vintage%20Arcade."
+        }
+      ],
+      "whatsappHosts": true,
+      "clipped": []
+    }
+  },
+  "page_errors": [],
+  "checked_at": "2026-09-21T11:44:37.327Z"
+}

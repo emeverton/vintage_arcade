@@ -1,7 +1,16 @@
 .vercel
 .env*
+!.env.example
+!.env.staging.example
+!apps/commerce/.env.example
 node_modules
 .next
 out
 .DS_Store
 *.log
+.medusa
+.test-build
+coverage
+*.tsbuildinfo
+apps/commerce/static
+apps/commerce/.cache

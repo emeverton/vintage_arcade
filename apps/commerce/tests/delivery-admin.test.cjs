@@ -1,0 +1,17 @@
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const { requireDeliveryRole, parseDeliveryCommand, canonicalJson } = require('../.test-build/domain/delivery-admin')
+const env = { VINTAGE_DELIVERY_VIEWER_IDS:'user_viewer', VINTAGE_DELIVERY_EDITOR_IDS:'user_editor', VINTAGE_DELIVERY_PUBLISHER_IDS:'user_publisher' }
+for (const actor of [undefined,'user_unknown']) test(`deny missing or ungranted actor ${actor}`,()=>assert.throws(()=>requireDeliveryRole(actor,'read',env)))
+for (const action of ['read','preview']) test(`viewer can ${action}`,()=>assert.equal(requireDeliveryRole('user_viewer',action,env),'viewer'))
+for (const action of ['draft','publish','rollback']) test(`viewer cannot ${action}`,()=>assert.throws(()=>requireDeliveryRole('user_viewer',action,env)))
+for (const action of ['read','preview','draft']) test(`editor can ${action}`,()=>assert.equal(requireDeliveryRole('user_editor',action,env),'editor'))
+for (const action of ['publish','rollback']) test(`editor cannot ${action}`,()=>assert.throws(()=>requireDeliveryRole('user_editor',action,env)))
+for (const action of ['read','preview','draft','publish','rollback']) test(`publisher can ${action}`,()=>assert.equal(requireDeliveryRole('user_publisher',action,env),'publisher'))
+test('malformed server grants fail closed',()=>assert.throws(()=>requireDeliveryRole('user_viewer','read',{...env,VINTAGE_DELIVERY_EDITOR_IDS:'*'})))
+const draft = {request_id:'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',expected_generation:0,reason:'Ajuste aprovado',changes:{threshold_minor:2500}}
+test('draft shape accepted',()=>assert.equal(parseDeliveryCommand(draft,'draft').changes.threshold_minor,2500))
+for (const patch of [{request_id:'x'},{expected_generation:-1},{expected_generation:1.5},{reason:'a'},{changes:{}},{changes:{sales_channel_id:'spoofed'}},{actor_id:'user_publisher'}]) test(`reject command ${JSON.stringify(patch)}`,()=>assert.throws(()=>parseDeliveryCommand({...draft,...patch},'draft')))
+test('rollback baseline accepted',()=>assert.equal(parseDeliveryCommand({request_id:draft.request_id,expected_generation:1,reason:'Reversão aprovada',rule_id:null},'rollback').rule_id,null))
+test('publish requires a saved revision',()=>assert.throws(()=>parseDeliveryCommand({request_id:draft.request_id,expected_generation:1,reason:'Publicar revisão',rule_id:null},'publish')))
+test('canonical hash input ignores object key insertion order',()=>assert.equal(canonicalJson({z:1,a:{b:2,a:3}}),canonicalJson({a:{a:3,b:2},z:1})))

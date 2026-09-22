@@ -1,0 +1,194 @@
+name: Vintage commerce foundation
+on:
+  push:
+    branches: [foundation/vintage-commerce-v1]
+    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'middleware.ts', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
+  pull_request:
+    branches: [main]
+    paths: ['apps/commerce/**', 'app/**', 'lib/**', 'middleware.ts', 'package*.json', 'compose.foundation.yml', 'tsconfig.json', '.github/workflows/commerce-foundation.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: vintage-foundation-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: vintage
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: vintage_ci
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U vintage -d vintage_ci" --health-interval 5s --health-timeout 5s --health-retries 20
+      redis:
+        image: redis:7.2-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      APP_ENV: test
+      NODE_ENV: test
+      PORT: '9000'
+      MEDUSA_WORKER_MODE: shared
+      DISABLE_MEDUSA_ADMIN: 'false'
+      MEDUSA_BACKEND_URL: http://localhost:9000
+      DATABASE_URL: postgres://vintage:isolated_ci_only@localhost:5432/vintage_ci
+      REDIS_URL: redis://localhost:6379
+      STORE_CORS: http://localhost:3000
+      ADMIN_CORS: http://localhost:9000
+      AUTH_CORS: http://localhost:3000,http://localhost:9000
+      IFOOD_ENABLED: 'false'
+      PAYMENTS_LIVE_ENABLED: 'false'
+      ADS_EXPORT_ENABLED: 'false'
+      VINTAGE_SLICE_ENABLED: 'true'
+      VINTAGE_CHECKOUT_PREVIEW_ENABLED: 'true'
+      VINTAGE_PREVIEW_ORIGIN: http://localhost:3000
+      VINTAGE_PREVIEW_BACKEND_URL: http://localhost:9000
+      VINTAGE_PREVIEW_FIXTURE_FILE: ${{ github.workspace }}/apps/commerce/.cache/checkout-fixture.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/commerce/package-lock.json
+      - name: Generate ephemeral test secrets
+        run: |
+          node <<'NODE'
+          const fs = require("fs"), crypto = require("crypto");
+          for (const name of ["JWT_SECRET", "COOKIE_SECRET", "VINTAGE_PREVIEW_SERVICE_SECRET"]) {
+            const value = crypto.randomBytes(32).toString("hex");
+            console.log("::add-mask::" + value);
+            fs.appendFileSync(process.env.GITHUB_ENV, name + "=" + value + "\n");
+          }
+          NODE
+      - name: Install backend dependencies
+        working-directory: apps/commerce
+        run: |
+          npm ci --include=dev --no-audit --no-fund
+          npm audit --omit=dev --json > runtime-audit.json || true
+          node -e 'const a=require("./runtime-audit.json");console.log("DEPENDENCY_AUDIT_REPORT",JSON.stringify(a.metadata?.vulnerabilities || a.error || {status:"unknown"}));if(!a.metadata || a.metadata.vulnerabilities.high || a.metadata.vulnerabilities.critical)process.exit(1)'
+      - name: Unit tests and TypeScript
+        working-directory: apps/commerce
+        run: |
+          npm run test:unit | tee unit-test-results.txt
+          npm run typecheck
+          node -e "const fs=require('fs');const a=fs.readFileSync('../../lib/staging-runtime.ts','utf8');const b=fs.readFileSync('src/domain/staging-runtime.ts','utf8');for (const fn of ['validatePreviewOriginUrl','validatePreviewBackendUrl','authorizeStagingBasic','isIsolatedPreviewEnv']){if(!a.includes('function '+fn)||!b.includes('function '+fn))process.exit(1)};console.log('STOREFRONT_STAGING_HELPERS_ALIGNED')"
+      - name: Apply migrations twice
+        working-directory: apps/commerce
+        run: |
+          npm run db:migrate
+          npm run db:migrate
+      - name: Verify persistence Redis lock and custom module
+        working-directory: apps/commerce
+        run: npm run smoke:modules
+      - name: Build backend and admin
+        working-directory: apps/commerce
+        run: npm run build
+      - name: Create isolated admin actors and ephemeral role grants
+        working-directory: apps/commerce
+        run: npx --no-install medusa exec ./src/scripts/seed-admin-identities.ts
+      - name: Start compiled Medusa and test HTTP
+        working-directory: apps/commerce
+        run: |
+          NODE_ENV=production npm --prefix .medusa/server run start > server.log 2>&1 &
+          echo $! > /tmp/vintage-commerce.pid
+          npm run smoke:http
+      - name: Product combo cart freight and simulated order
+        working-directory: apps/commerce
+        run: npx --no-install medusa exec ./src/scripts/smoke-commerce.ts | tee commerce-slice-results.txt
+      - name: Delivery backoffice permissions publication rollback and atomic audit
+        working-directory: apps/commerce
+        run: npx --no-install medusa exec ./src/scripts/smoke-delivery-admin.ts | tee delivery-admin-results.txt
+      - name: Install isolated browser test tooling
+        run: |
+          npm install --prefix /tmp/vintage-browser --ignore-scripts --no-audit --no-fund playwright@1.63.0
+          node /tmp/vintage-browser/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Browser backoffice flow and screenshots
+        working-directory: apps/commerce
+        run: node scripts/smoke-delivery-ui.cjs | tee delivery-ui-results.txt
+      - name: Prepare synthetic browser checkout fixture
+        working-directory: apps/commerce
+        run: npx --no-install medusa exec ./src/scripts/seed-checkout-preview.ts
+      - name: Private checkout API isolation quote expiry and simulated order
+        working-directory: apps/commerce
+        run: npx --no-install medusa exec ./src/scripts/smoke-checkout-preview.ts | tee checkout-api-results.txt
+      - name: Preserve existing landing page and build isolated checkout
+        env:
+          NODE_ENV: production
+        run: |
+          npm ci --include=dev --no-audit --no-fund
+          npm run build
+      - name: Start loopback storefront and disabled preview control
+        run: |
+          NODE_ENV=production PORT=3000 npm run start -- --hostname 127.0.0.1 --port 3000 > apps/commerce/checkout-next.log 2>&1 &
+          echo $! > /tmp/vintage-preview.pid
+          VINTAGE_CHECKOUT_PREVIEW_ENABLED=false NODE_ENV=production PORT=3002 npm run start -- --hostname 127.0.0.1 --port 3002 > apps/commerce/checkout-disabled.log 2>&1 &
+          echo $! > /tmp/vintage-preview-disabled.pid
+      - name: Browser checkout sessions incentives and simulated payment
+        working-directory: apps/commerce
+        run: node scripts/smoke-checkout-ui.cjs | tee checkout-ui-results.txt
+      - name: Verify Redis failure and recovery in readiness
+        working-directory: apps/commerce
+        run: |
+          docker stop "${{ job.services.redis.id }}"
+          npm run smoke:http -- unready
+          docker start "${{ job.services.redis.id }}"
+          npm run smoke:http
+      - name: Restore isolated PostgreSQL backup and compare domain records
+        run: |
+          docker exec "${{ job.services.postgres.id }}" pg_dump -U vintage -Fc vintage_ci > /tmp/vintage-ci.dump
+          docker exec "${{ job.services.postgres.id }}" createdb -U vintage vintage_restore
+          docker exec -i "${{ job.services.postgres.id }}" pg_restore --exit-on-error -U vintage -d vintage_restore < /tmp/vintage-ci.dump
+          for table in vintage_delivery_rule vintage_combo_definition vintage_combo_command vintage_commerce_event vintage_delivery_control vintage_delivery_audit vintage_preview_session; do
+            query="SELECT md5(COALESCE(string_agg(row_to_json(t)::text, '|' ORDER BY id),'')) FROM $table t"
+            source_hash=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_ci -Atc "$query")
+            restored_hash=$(docker exec "${{ job.services.postgres.id }}" psql -U vintage -d vintage_restore -Atc "$query")
+            test "$source_hash" = "$restored_hash"
+            echo "ISOLATED_DOMAIN_RESTORE_PASS: $table"
+          done
+      - name: Publish evidence never tokens environment files or browser storage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: foundation-evidence
+          path: |
+            apps/commerce/package-lock.json
+            apps/commerce/unit-test-results.txt
+            apps/commerce/runtime-audit.json
+            apps/commerce/server.log
+            apps/commerce/commerce-slice-results.txt
+            apps/commerce/delivery-admin-results.txt
+            apps/commerce/delivery-ui-results.txt
+            apps/commerce/checkout-api-results.txt
+            apps/commerce/checkout-ui-results.txt
+            apps/commerce/checkout-next.log
+            apps/commerce/checkout-disabled.log
+            apps/commerce/.cache/commerce-slice-report.json
+            apps/commerce/.cache/delivery-admin-report.json
+            apps/commerce/.cache/delivery-ui-report.json
+            apps/commerce/.cache/checkout-api-report.json
+            apps/commerce/.cache/checkout-ui-report.json
+            apps/commerce/.cache/vintage-delivery-admin.png
+            apps/commerce/.cache/vintage-delivery-admin-mobile.png
+            apps/commerce/.cache/vintage-checkout-desktop.png
+            apps/commerce/.cache/vintage-checkout-mobile.png
+          include-hidden-files: true
+          retention-days: 7
+      - name: Stop isolated processes
+        if: always()
+        run: |
+          for file in /tmp/vintage-commerce.pid /tmp/vintage-preview.pid /tmp/vintage-preview-disabled.pid; do
+            test ! -f "$file" || kill "$(cat "$file")" || true
+          done
