@@ -2,10 +2,30 @@ name: Vintage LP release
 on:
   push:
     branches: [release/vintage-lp-v1]
-    paths: ['app/**', 'package*.json', 'tsconfig.json', 'next.config.mjs', 'tailwind.config.ts', 'postcss.config.js', '.github/workflows/lp-release.yml']
+    paths:
+      - 'app/**'
+      - 'scripts/smoke-lp-ui.cjs'
+      - 'scripts/**'
+      - 'docs/discovery/evidence/release-lp/**'
+      - 'package*.json'
+      - 'tsconfig.json'
+      - 'next.config.mjs'
+      - 'tailwind.config.ts'
+      - 'postcss.config.js'
+      - '.github/workflows/lp-release.yml'
   pull_request:
     branches: [main]
-    paths: ['app/**', 'package*.json', 'tsconfig.json', 'next.config.mjs', 'tailwind.config.ts', 'postcss.config.js', '.github/workflows/lp-release.yml']
+    paths:
+      - 'app/**'
+      - 'scripts/smoke-lp-ui.cjs'
+      - 'scripts/**'
+      - 'docs/discovery/evidence/release-lp/**'
+      - 'package*.json'
+      - 'tsconfig.json'
+      - 'next.config.mjs'
+      - 'tailwind.config.ts'
+      - 'postcss.config.js'
+      - '.github/workflows/lp-release.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -36,8 +56,48 @@ jobs:
         run: npm ci --include=dev --no-audit --no-fund
       - name: Dependency audit report for LP runtime
         run: |
-          npm audit --omit=dev --json > lp-runtime-audit.json || true
-          node -e 'const a=require("./lp-runtime-audit.json"); const v=a.metadata?.vulnerabilities||{}; console.log("LP_DEPENDENCY_AUDIT",JSON.stringify(v)); if((v.high||0)>0||(v.critical||0)>0) process.exit(1)'
+          set +e
+          npm audit --omit=dev --json > lp-runtime-audit.json
+          audit_exit=$?
+          set -e
+          node <<'NODE'
+          const fs = require('fs');
+          let a;
+          try {
+            a = JSON.parse(fs.readFileSync('lp-runtime-audit.json', 'utf8'));
+          } catch (err) {
+            console.error('LP_DEPENDENCY_AUDIT_FAIL', 'invalid-json', String(err));
+            process.exit(1);
+          }
+          if (a.error) {
+            console.error('LP_DEPENDENCY_AUDIT_FAIL', 'audit-error', JSON.stringify(a.error));
+            process.exit(1);
+          }
+          if (!a.metadata || typeof a.metadata !== 'object') {
+            console.error('LP_DEPENDENCY_AUDIT_FAIL', 'missing-metadata');
+            process.exit(1);
+          }
+          const v = a.metadata.vulnerabilities;
+          if (!v || typeof v !== 'object') {
+            console.error('LP_DEPENDENCY_AUDIT_FAIL', 'missing-vulnerabilities');
+            process.exit(1);
+          }
+          for (const key of ['info', 'low', 'moderate', 'high', 'critical', 'total']) {
+            if (typeof v[key] !== 'number' || Number.isNaN(v[key]) || v[key] < 0) {
+              console.error('LP_DEPENDENCY_AUDIT_FAIL', 'invalid-count', key, v[key]);
+              process.exit(1);
+            }
+          }
+          console.log('LP_DEPENDENCY_AUDIT', JSON.stringify(v));
+          if (v.high > 0 || v.critical > 0) {
+            console.error('LP_DEPENDENCY_AUDIT_FAIL', 'high-or-critical', JSON.stringify(v));
+            process.exit(1);
+          }
+          NODE
+          if [ "$audit_exit" -gt 1 ]; then
+            echo "LP_DEPENDENCY_AUDIT_FAIL npm-audit-exit=$audit_exit"
+            exit 1
+          fi
       - name: TypeScript
         run: npx tsc --noEmit
       - name: Production build

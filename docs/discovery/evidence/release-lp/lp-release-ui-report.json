@@ -1,9 +1,309 @@
 {
   "scope": "lp_release_isolated",
   "base": "http://127.0.0.1:3010",
+  "shots": [
+    {
+      "name": "mobile-390",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "file": "docs/discovery/evidence/release-lp/vintage-lp-release-390.png",
+      "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-390-player1-card.png",
+      "bytes": 628563,
+      "focused": {
+        "tag": "A",
+        "href": "#cardapio",
+        "text": "Cardápio"
+      },
+      "checks": {
+        "scrollWidth": 390,
+        "clientWidth": 390,
+        "hasLogoImg": false,
+        "hasPedidoTeste": false,
+        "hasSelectDecor": false,
+        "brandStatus": [
+          "text-fallback",
+          "text-fallback"
+        ],
+        "hoursCopy": true,
+        "menuCtas": 3,
+        "eventLinks": [
+          "Consultar evento",
+          "Consultar evento",
+          "Consultar evento"
+        ],
+        "whatsappOk": true,
+        "clippedByPolygon": [],
+        "playerCardAudit": {
+          "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+          "clippingAncestor": null,
+          "glyphClipped": false,
+          "firstGlyph": {
+            "left": 61,
+            "right": 73.140625,
+            "width": 12.140625,
+            "top": 1840.40625
+          },
+          "rect": {
+            "left": 38,
+            "right": 352,
+            "width": 314,
+            "top": 1781.609375
+          }
+        },
+        "panelHosts": [
+          {
+            "className": "marquee-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "screen-bezel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "control-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          }
+        ]
+      },
+      "page_errors": []
+    },
+    {
+      "name": "tablet-768",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "file": "docs/discovery/evidence/release-lp/vintage-lp-release-768.png",
+      "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-768-player1-card.png",
+      "bytes": 733707,
+      "focused": {
+        "tag": "A",
+        "href": "#cardapio",
+        "text": "Cardápio"
+      },
+      "checks": {
+        "scrollWidth": 768,
+        "clientWidth": 768,
+        "hasLogoImg": false,
+        "hasPedidoTeste": false,
+        "hasSelectDecor": false,
+        "brandStatus": [
+          "text-fallback",
+          "text-fallback"
+        ],
+        "hoursCopy": true,
+        "menuCtas": 3,
+        "eventLinks": [
+          "Consultar evento",
+          "Consultar evento",
+          "Consultar evento"
+        ],
+        "whatsappOk": true,
+        "clippedByPolygon": [],
+        "playerCardAudit": {
+          "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+          "clippingAncestor": null,
+          "glyphClipped": false,
+          "firstGlyph": {
+            "left": 101,
+            "right": 113.140625,
+            "width": 12.140625,
+            "top": 1675.0625
+          },
+          "rect": {
+            "left": 78,
+            "right": 271.328125,
+            "width": 193.328125,
+            "top": 1616.265625
+          }
+        },
+        "panelHosts": [
+          {
+            "className": "marquee-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "screen-bezel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "control-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          }
+        ]
+      },
+      "page_errors": []
+    },
+    {
+      "name": "laptop-1024",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "file": "docs/discovery/evidence/release-lp/vintage-lp-release-1024.png",
+      "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-1024-player1-card.png",
+      "bytes": 836283,
+      "focused": {
+        "tag": "A",
+        "href": "#cardapio",
+        "text": "Cardápio"
+      },
+      "checks": {
+        "scrollWidth": 1024,
+        "clientWidth": 1024,
+        "hasLogoImg": false,
+        "hasPedidoTeste": false,
+        "hasSelectDecor": false,
+        "brandStatus": [
+          "text-fallback",
+          "text-fallback"
+        ],
+        "hoursCopy": true,
+        "menuCtas": 3,
+        "eventLinks": [
+          "Consultar evento",
+          "Consultar evento",
+          "Consultar evento"
+        ],
+        "whatsappOk": true,
+        "clippedByPolygon": [],
+        "playerCardAudit": {
+          "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+          "clippingAncestor": null,
+          "glyphClipped": false,
+          "firstGlyph": {
+            "left": 117,
+            "right": 129.140625,
+            "width": 12.140625,
+            "top": 1468.953125
+          },
+          "rect": {
+            "left": 94,
+            "right": 362,
+            "width": 268,
+            "top": 1410.15625
+          }
+        },
+        "panelHosts": [
+          {
+            "className": "marquee-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "screen-bezel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "control-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          }
+        ]
+      },
+      "page_errors": []
+    },
+    {
+      "name": "desktop-1380",
+      "viewport": {
+        "width": 1380,
+        "height": 1000
+      },
+      "file": "docs/discovery/evidence/release-lp/vintage-lp-release-desktop.png",
+      "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-desktop-player1-card.png",
+      "bytes": 916539,
+      "focused": {
+        "tag": "A",
+        "href": "#cardapio",
+        "text": "Cardápio"
+      },
+      "checks": {
+        "scrollWidth": 1380,
+        "clientWidth": 1380,
+        "hasLogoImg": false,
+        "hasPedidoTeste": false,
+        "hasSelectDecor": false,
+        "brandStatus": [
+          "text-fallback",
+          "text-fallback"
+        ],
+        "hoursCopy": true,
+        "menuCtas": 3,
+        "eventLinks": [
+          "Consultar evento",
+          "Consultar evento",
+          "Consultar evento"
+        ],
+        "whatsappOk": true,
+        "clippedByPolygon": [],
+        "playerCardAudit": {
+          "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+          "clippingAncestor": null,
+          "glyphClipped": false,
+          "firstGlyph": {
+            "left": 234,
+            "right": 246.140625,
+            "width": 12.140625,
+            "top": 1451.796875
+          },
+          "rect": {
+            "left": 211,
+            "right": 519.65625,
+            "width": 308.65625,
+            "top": 1393
+          }
+        },
+        "panelHosts": [
+          {
+            "className": "marquee-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "screen-bezel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          },
+          {
+            "className": "control-panel",
+            "present": true,
+            "hostClipPath": "none",
+            "hostPointerEvents": "auto"
+          }
+        ]
+      },
+      "page_errors": []
+    }
+  ],
   "desktop": {
+    "name": "desktop-1380",
+    "viewport": {
+      "width": 1380,
+      "height": 1000
+    },
     "file": "docs/discovery/evidence/release-lp/vintage-lp-release-desktop.png",
-    "bytes": 873708,
+    "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-desktop-player1-card.png",
+    "bytes": 916539,
     "focused": {
       "tag": "A",
       "href": "#cardapio",
@@ -27,13 +327,56 @@
         "Consultar evento"
       ],
       "whatsappOk": true,
-      "clipped": []
+      "clippedByPolygon": [],
+      "playerCardAudit": {
+        "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+        "clippingAncestor": null,
+        "glyphClipped": false,
+        "firstGlyph": {
+          "left": 234,
+          "right": 246.140625,
+          "width": 12.140625,
+          "top": 1451.796875
+        },
+        "rect": {
+          "left": 211,
+          "right": 519.65625,
+          "width": 308.65625,
+          "top": 1393
+        }
+      },
+      "panelHosts": [
+        {
+          "className": "marquee-panel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        },
+        {
+          "className": "screen-bezel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        },
+        {
+          "className": "control-panel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        }
+      ]
     },
     "page_errors": []
   },
   "mobile": {
-    "file": "docs/discovery/evidence/release-lp/vintage-lp-release-mobile.png",
-    "bytes": 635771,
+    "name": "mobile-390",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "file": "docs/discovery/evidence/release-lp/vintage-lp-release-390.png",
+    "card_file": "docs/discovery/evidence/release-lp/vintage-lp-release-390-player1-card.png",
+    "bytes": 628563,
     "focused": {
       "tag": "A",
       "href": "#cardapio",
@@ -57,7 +400,44 @@
         "Consultar evento"
       ],
       "whatsappOk": true,
-      "clipped": []
+      "clippedByPolygon": [],
+      "playerCardAudit": {
+        "text": "PLAYER 1Comer e jogar no mesmo lugarBurgers, porções, drinks e fliperamas em um ambiente feito para transformar a refeiç",
+        "clippingAncestor": null,
+        "glyphClipped": false,
+        "firstGlyph": {
+          "left": 61,
+          "right": 73.140625,
+          "width": 12.140625,
+          "top": 1840.40625
+        },
+        "rect": {
+          "left": 38,
+          "right": 352,
+          "width": 314,
+          "top": 1781.609375
+        }
+      },
+      "panelHosts": [
+        {
+          "className": "marquee-panel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        },
+        {
+          "className": "screen-bezel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        },
+        {
+          "className": "control-panel",
+          "present": true,
+          "hostClipPath": "none",
+          "hostPointerEvents": "auto"
+        }
+      ]
     },
     "page_errors": []
   },
@@ -66,5 +446,5 @@
     "pedido_teste": 404,
     "vintage_test_catalog": 404
   },
-  "checked_at": "2026-09-21T12:05:27.226Z"
+  "checked_at": "2026-09-21T12:25:09.698Z"
 }
